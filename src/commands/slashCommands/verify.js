@@ -4,7 +4,7 @@ const sendVerification = require("../../interactions/sendVerification");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("verify")
-    .setDescription("Можливості боту"),
+    .setDescription("Верифікація учнів GoIteens"),
 
   async execute(interaction) {
     await interaction.deferReply({
