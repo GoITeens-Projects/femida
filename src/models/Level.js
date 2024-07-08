@@ -23,6 +23,10 @@ const levelSchema = new Schema({
     max: 150,
     default: 0,
   },
+  pinnedLevels: {
+    type: Array,
+    default: []
+  }
 });
 
 module.exports = model("Level", levelSchema);
