@@ -49,15 +49,4 @@ module.exports = async (interaction, message, newState) => {
     } else {
         return;
     }
-    // if (currentUsers.length === 0) {
-    //   const newUser = new Level({
-    //     userId: interaction.user.id ? interaction.user.id : message.author.id,
-    //     guildId: interaction.guild.id ? interaction.guild.id : message.guildId,
-    //     xp: 0,
-    //     currentXp: 0,
-    //     level: 1,
-    //   });
-
-    //   await newUser.save();
-    // }
 };
