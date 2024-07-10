@@ -30,15 +30,17 @@ module.exports = async (oldState, newState, client) => {
           const people = await Level.findOne({ userId: user });
           if (people.currentXp !== 150) {
             let updateXp = people.currentXp + 20;
+            let upAllXp = people.xp + 20;
             if (updateXp > 150) {
               updateXp = 150;
+              const up = 150 - people.currentXp;
+              upAllXp = people.xp + up;
             }
             await Level.findOneAndUpdate(
               { userId: user },
-              { currentXp: updateXp }
+              { currentXp: updateXp, xp: upAllXp}
             );
             await updateLevel(people, user);
-            // console.log("people", people);
           }
         });
       }
@@ -49,13 +51,20 @@ module.exports = async (oldState, newState, client) => {
 
       if (arrObj.length > 4) {
         const people = await Level.findOne({ userId: newState.id });
-        const updateXp = people.xp + 20;
+        if(people.currentXp < 150){
+        let updateXp = people.currentXp + 20;
+        let upAllXp = people.xp + 20;
+        if (updateXp > 150) {
+          updateXp = 150;
+          const up = 150 - people.currentXp;
+          upAllXp = people.xp + up;
+        }
         await Level.findOneAndUpdate(
-          { userId: newState.id },
-          { currentXp: updateXp }
+          { userId: user },
+          { currentXp: updateXp, xp: upAllXp}
         );
         await updateLevel(people, newState.id);
       }
     }
-  }
+  }}
 };
