@@ -39,10 +39,13 @@ module.exports = async(oldState, newState, client) => {
 
                     if (people.currentXp !== 150) {
                         let updateXp = people.currentXp + xpToAdd;
+                        let upAllXp = people.xp + xpToAdd;
                         if (updateXp > 150) {
                             updateXp = 150;
+                            const up = 150 - people.currentXp;
+                            upAllXp = people.xp + up
                         }
-                        await Level.findOneAndUpdate({ userId: user }, { currentXp: updateXp });
+                        await Level.findOneAndUpdate({ userId: user }, { currentXp: updateXp, xp: upAllXp });
                         await updateLevel(people, user);
                     }
                 });
@@ -61,8 +64,15 @@ module.exports = async(oldState, newState, client) => {
                     xpToAdd *= 2; // Нараховуємо подвійну кількість XP для студентів
                 }
 
-                const updateXp = people.currentXp + xpToAdd;
-                await Level.findOneAndUpdate({ userId: newState.id }, { currentXp: updateXp });
+                if(people.currentXp < 150){
+                     let updateXp = people.currentXp + xpToAdd;
+                     let upAllXp = people.xp + xpToAdd;
+                       if (updateXp > 150) {
+                           updateXp = 150;
+                           const up = 150 - people.currentXp;
+                           upAllXp = people.xp + up;
+        }
+                await Level.findOneAndUpdate({ userId: newState.id }, { currentXp: updateXp, xp: upAllXp });
                 await updateLevel(people, newState.id);
             }
         }
