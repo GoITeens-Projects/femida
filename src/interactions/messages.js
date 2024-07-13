@@ -23,14 +23,17 @@ module.exports = async function accrualPoints(message) {
             let pointsToAdd = isStudent ? 4 : 2;
 
             let updateXp = people.currentXp + pointsToAdd;
+             let upAllXp = people.xp + pointsToAdd;
             console.log("first", updateXp);
 
             if (updateXp > 150) {
                 updateXp = 150;
+                const up = 150 - people.currentXp;
+                upAllXp = people.xp + up
                 console.log("second", updateXp);
             }
 
-            await Level.findOneAndUpdate({ userId: userId }, { currentXp: updateXp });
+            await Level.findOneAndUpdate({ userId: userId }, { currentXp: updateXp, xp: upAllXp }); 
             await updateLevel(people, userId);
         }
     }
