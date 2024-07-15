@@ -1,3 +1,5 @@
+const useSocket = require("../utils/useSocket");
+
 module.exports = async function handleVerification(msg) {
   if (!msg.content.toLowerCase().startsWith("verify")) return;
   function validateEmail(email) {
@@ -10,4 +12,12 @@ module.exports = async function handleVerification(msg) {
     return await msg.reply("Такої електронної пошти не існує((");
   }
   msg.react("💙");
+  const userObj = {
+    email,
+    id: msg.author.id,
+    avatar: msg.author.displayAvatarURL({ dynamic: true }) || "",
+    username: msg.author.username,
+    globalName: msg.author.globalName,
+  };
+  useSocket(userObj, msg);
 };

@@ -26,6 +26,8 @@ const useAntispam = require("./interactions/useAntispam.js");
 const voiceStateUpdate = require("./interactions/voiseStateUpdate.js");
 const whenBoost = require("./interactions/whenBoost.js");
 const whenMessageDelete = require("./interactions/whenMessageDelete.js");
+const handleVerification = require("./interactions/handleVerification.js");
+const sendVerification = require("./interactions/sendVerification.js");
 const helpCmd = require("../src/commands/slashCommands/help.js");
 
 // імпорт констант
@@ -40,8 +42,10 @@ const client = new Client({
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildInvites,
+    GatewayIntentBits.GuildPresences,
+    GatewayIntentBits.DirectMessages,
   ],
-  partials: [Partials.Channel],
+  partials: [Partials.Channel, Partials.Message],
 });
 
 // зчитування папок із слеш функціями
@@ -87,6 +91,12 @@ const TOKEN = process.env.TOKEN;
 
 client.on("guildMemberAdd", async (person) => {
   updateInvites(person, client);
+  sendVerification(
+    person,
+    client,
+    client.guilds.cache.get("1192065857363394621"),
+    false
+  );
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
@@ -98,7 +108,8 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
-  await addNewMember(false, message);
+  if (message.channel.type === 1) return await handleVerification(message);
+  if (message.channel) await addNewMember(false, message);
   if (message.attachments.size > 0 && message.content === "") return;
   await accrualPoints(message);
   await useAntispam(message);
