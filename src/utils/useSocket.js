@@ -2,7 +2,7 @@ const main = require("../index.js");
 const WebSocket = require("ws");
 
 module.exports = function useSocket(obj, msg) {
-  const ws = new WebSocket("wss://" + process.env.FEMIDA_API);
+  const ws = new WebSocket(process.env.FEMIDA_API);
   ws.onopen = (evt) => {
     ws.send(JSON.stringify(obj));
     msg.channel.send("Пречудово. Відтепер у тебе є 15 хвилин на те, щоб перейти по посиланню в електронному листі")
