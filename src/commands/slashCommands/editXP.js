@@ -65,7 +65,7 @@ module.exports = {
         guildId: interaction.guild.id,
         xp: 0,
         currentXp: 0,
-        level: 1,
+        level: 0,
       });
 
       await newUser.save();

@@ -24,7 +24,7 @@ module.exports = {
     } catch (err) {
       console.log("Verify cmd error - " + err);
       await interaction.editReply({
-        content: "Виникла дуже дивна помилка",
+        content: "Виникла дивна помилка. Перевір налаштування особистих повідомлень",
         ephemeral: true,
       });
     }
