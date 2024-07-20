@@ -127,6 +127,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 });
 
 client.on("messageDelete", async (msg) => {
+  if (msg.channel.type === 1) return;
   whenMessageDelete(msg, AuditLogEvent, client);
 });
 

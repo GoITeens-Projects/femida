@@ -4,14 +4,25 @@ const {
   ButtonStyle,
   ComponentType,
 } = require("discord.js");
+const renderRatingPage = require("./renderRatingPage");
 
-module.exports = async function (interaction, pages, time = 60 * 1000) {
+module.exports = async function (
+  interaction,
+  client,
+  totalPages,
+  time = 60 * 1000
+) {
   try {
-    if (!interaction || !pages || !pages > 0)
-      throw new Error("Invalid args for pagination");
-    if (pages.length === 1)
-      return await interaction.editReply({ embeds: pages, components: [] });
     let index = 0;
+    if (!interaction || !totalPages || !totalPages > 0)
+      throw new Error("Invalid args for pagination");
+    if (totalPages === 1) {
+      const oneEmbed = await renderRatingPage(index, 10, client);
+      return await interaction.editReply({
+        embeds: [oneEmbed.embed],
+        components: [],
+      });
+    }
 
     const buttonsObj = {
       firstBtn: new ButtonBuilder()
@@ -26,7 +37,7 @@ module.exports = async function (interaction, pages, time = 60 * 1000) {
         .setDisabled(true),
       pageCounter: new ButtonBuilder()
         .setCustomId("pagecounter")
-        .setLabel(`${index + 1}/${pages.length}`)
+        .setLabel(`${index + 1}/${totalPages}`)
         .setStyle(ButtonStyle.Secondary)
         .setDisabled(true),
       nextBtn: new ButtonBuilder()
@@ -48,13 +59,15 @@ module.exports = async function (interaction, pages, time = 60 * 1000) {
       nextBtn,
       lastBtn,
     ]);
+    const newEmbed = await renderRatingPage(index, 10, client);
     const msg = await interaction.editReply({
-      embeds: [pages[index]],
+      embeds: [newEmbed.embed],
       components: [buttons],
       fetchreply: true,
     });
-    const collector = await msg.createMessageComponentCollector({
+    let collector = await msg.createMessageComponentCollector({
       componentType: ComponentType.Button,
+      dispose: false,
       time,
     });
     collector.on("collect", async (i) => {
@@ -67,21 +80,21 @@ module.exports = async function (interaction, pages, time = 60 * 1000) {
       switch (i.customId) {
         case "firstpage":
           index = 0;
-          pageCounter.setLabel(`${index + 1}/${pages.length}`);
+          pageCounter.setLabel(`${index + 1}/${totalPages}`);
           break;
         case "pageprev":
           if (index > 0) index--;
-          pageCounter.setLabel(`${index + 1}/${pages.length}`);
+          pageCounter.setLabel(`${index + 1}/${totalPages}`);
           break;
         case "pagenext":
-          if (index < pages.length - 1) {
+          if (index < totalPages - 1) {
             index++;
-            pageCounter.setLabel(`${index + 1}/${pages.length}`);
+            pageCounter.setLabel(`${index + 1}/${totalPages}`);
           }
           break;
         case "lastpage":
-          index = pages.length - 1;
-          pageCounter.setLabel(`${index + 1}/${pages.length}`);
+          index = totalPages - 1;
+          pageCounter.setLabel(`${index + 1}/${totalPages}`);
           break;
         default:
           break;
@@ -95,23 +108,26 @@ module.exports = async function (interaction, pages, time = 60 * 1000) {
         prevBtn.setDisabled(false);
       }
 
-      if (index === pages.length - 1) {
+      if (index === totalPages - 1) {
         nextBtn.setDisabled(true);
         lastBtn.setDisabled(true);
       } else {
         nextBtn.setDisabled(false);
         lastBtn.setDisabled(false);
       }
-
+      //?
+      const { embed } = await renderRatingPage(index, 10, client);
+      //?
       await msg
-        .edit({ embeds: [pages[index]], components: [buttons] })
+        .edit({ embeds: [embed], components: [buttons] })
         .catch((err) => console.log(err));
       collector.resetTimer();
     });
 
     collector.on("end", async () => {
+      const { embed } = await renderRatingPage(index, 10, client);
       await msg
-        .edit({ embeds: [pages[index]], components: [] })
+        .edit({ embeds: [embed], components: [] })
         .catch((err) => console.log(err));
     });
     return msg;

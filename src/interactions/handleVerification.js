@@ -12,6 +12,7 @@ module.exports = async function handleVerification(msg) {
     return await msg.reply("Такої електронної пошти не існує((");
   }
   msg.react("💙");
+  const waitMsg = await msg.channel.send("Зачекай трохи..");
   const userObj = {
     email,
     id: msg.author.id,
@@ -19,5 +20,5 @@ module.exports = async function handleVerification(msg) {
     username: msg.author.username,
     globalName: msg.author.globalName,
   };
-  useSocket(userObj, msg);
+  useSocket(userObj, msg, waitMsg);
 };
