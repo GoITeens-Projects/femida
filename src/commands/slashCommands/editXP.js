@@ -5,23 +5,25 @@ const updateLevel = require("../../utils/updateLevel");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("edit-xp")
-    .setDescription("Add or subtract xp to someone's.")
+    .setDescription("Додати чи відняти XP користувачу")
     .addUserOption((option) =>
       option
         .setName("target-user")
-        .setDescription("The user whose xp you want to add or subtract")
+        .setDescription("Користувач XP якого ви хочете редагувати")
         .setRequired(true)
     )
     .addNumberOption((option) =>
       option
         .setName("xp")
-        .setDescription("How many XP do you want to add or subtract to user")
+        .setDescription("Скільки XP ви хочете додати або відняти користувачеві")
         .setRequired(true)
     )
     .addStringOption((option) =>
       option
         .setName("mode")
-        .setDescription('Choose "add" to add XP or "subtract" to subtract XP')
+        .setDescription(
+          "Виберіть «додати», щоб додати XP, або «відняти», щоб відняти XP"
+        )
         .addChoices(
           { name: "Add", value: "add" },
           { name: "Subtract", value: "subtract" }
@@ -31,7 +33,7 @@ module.exports = {
 
   async execute(interaction) {
     if (!interaction.inGuild()) {
-      interaction.reply("You can't run this command inside a server");
+      await interaction.reply("Ви не можете запустити цю команду на сервері");
       return;
     }
 
@@ -44,7 +46,9 @@ module.exports = {
     );
 
     if (!hasAllowedRole) {
-      interaction.reply("Тільки адміністрація має право використовувати цю команду🙃");
+      interaction.reply(
+        "Тільки адміністрація має право використовувати цю команду🙃"
+      );
       return;
     }
 
