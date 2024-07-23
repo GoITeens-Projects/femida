@@ -27,7 +27,19 @@ module.exports = async function gifCmds(interaction, actionText) {
     const colors = await getColors(gifUrl);
     const embed = new EmbedBuilder()
       .setTitle(
-        `${interaction.user.globalName} ${actionText} ${targetUserObj.user.globalName}`
+        `${
+          interaction.member.nickname
+            ? interaction.member.nickname
+            : interaction.user.globalName
+            ? interaction.user.globalName
+            : interaction.user.username
+        } ${actionText} ${
+          targetUserObj.nickname
+            ? targetUserObj.nickname
+            : targetUserObj.user.globalName
+            ? targetUserObj.user.globalName
+            : targetUserObj.user.username
+        }`
       )
       .setColor(colors[0]._rgb)
       .setImage(gifUrl);
