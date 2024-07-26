@@ -5,8 +5,8 @@ const { EmbedBuilder } = require("discord.js");
 module.exports = async (oldMember, newMember, client) => {
   if (oldMember.premiumSinceTimestamp || newMember.premiumSinceTimestamp) {
     if (
-      (!oldMember.premiumSinceTimestamp && newMember.premiumSinceTimestamp) ||
-      oldMember.premiumSinceTimestamp !== newMember.premiumSinceTimestamp
+      oldMember.premiumSinceTimestamp !== newMember.premiumSinceTimestamp &&
+      newMember.premiumSinceTimestamp > oldMember.premiumSinceTimestamp
     ) {
       const userId = newMember.user.id;
 
