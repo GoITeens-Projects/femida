@@ -1,7 +1,9 @@
 const Level = require("../models/Level");
+const getLimit = require("./getNeededXp")
 
 module.exports = async (userId) => {
   const user = await Level.find({ userId });
-  const limit = user.currentXp < 150 ? true : false;
-  return limit;
+  const limit = getLimit(user.level)
+  const curLimit = user.currentXp < limit ? true : false;
+  return curLimit;
 };
