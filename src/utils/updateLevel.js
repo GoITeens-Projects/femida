@@ -23,25 +23,24 @@ module.exports = async function updateLevel({ level, xp }, userId) {
   if (newLevel > level) {
     const params = { id: userId, level: newLevel };
     await sendLevelNotification(params);
-    if (newLevel % 5 === 0 && newLevel !== 0) {
+    if (newLevel - level >= 2) {
+      for (let i = level + 1; i <= newLevel; i++) {
+        if (i % 5 !== 0) continue;
+        try {
+          await sendDmMsg({ id: userId, level: i });
+          await addRoleLevel({ level: i, xp }, userId);
+          await addGifters(userId, i);
+        } catch (err) {
+          console.log("Level Error 2 - " + err);
+        }
+      }
+    } else if (newLevel % 5 === 0 && newLevel !== 0) {
       try {
         await sendDmMsg(params);
         await addRoleLevel({ level: newLevel, xp }, userId);
         await addGifters(userId, newLevel);
       } catch (err) {
         console.log("Level Error - " + err);
-      }
-    }
-    if (newLevel - level >= 2) {
-      for (let i = level + 1; i <= newLevel; i++) {
-        if (i % 5 !== 0) continue;
-        try {
-          await sendDmMsg(params);
-          await addRoleLevel({ level: newLevel, xp }, userId);
-          await addGifters(userId, i);
-        } catch (err) {
-          console.log("Level Error 2 - " + err);
-        }
       }
     }
   }
