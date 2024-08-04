@@ -3,16 +3,18 @@ const gifCmds = require("../../interactions/gifCmds");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("panic")
-    .setDescription("Не нервуйся, все буде добре（‐＾▽＾‐）")
+    .setName("cry")
+    .setDescription("Поплач у чат, якщо хочеться ＞︿＜")
     .addUserOption((option) =>
       option
         .setName("target-user")
-        .setDescription("Нікнейм учасника який став причиною твоєї паніки")
+        .setDescription(
+          "Нікнейм учасника у якому ти розчарований"
+        )
         .setRequired(true)
     ),
 
   async execute(interaction) {
-    await gifCmds(interaction, "сильно нервує від дій");
+    await gifCmds(interaction, "плаче від дій");
   },
 };

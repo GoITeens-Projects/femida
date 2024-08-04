@@ -3,16 +3,16 @@ const gifCmds = require("../../interactions/gifCmds");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("cuddle")
-    .setDescription("Дуууже сильно обійми когось з учасників (*^^*)♡")
+    .setName("nope")
+    .setDescription("Вислови свою незгоду ( `ε´ )")
     .addUserOption((option) =>
       option
         .setName("target-user")
-        .setDescription("Нікнейм учасника якого ти хочеш дуже сильно обійняти")
+        .setDescription("Нікнейм учасника з думкою якого ти незгоден")
         .setRequired(true)
     ),
 
   async execute(interaction) {
-    await gifCmds(interaction, "пестить");
+    await gifCmds(interaction, "незгоден з");
   },
 };

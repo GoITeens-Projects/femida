@@ -2,6 +2,7 @@ const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 const Level = require("../models/Level");
 const getColors = require("get-image-colors");
 const gifs = require("discord-actions");
+const ainasepics = require("ainasepics");
 const NodeCache = require("node-cache");
 const usersInCooldown = new NodeCache({ stdTTL: 30 });
 
@@ -34,11 +35,13 @@ module.exports = async function gifCmds(interaction, actionText) {
       slap: 0,
       poke: 0,
       highfive: 5,
-      cuddle: 10,
+      // cuddle: 10,
+      nope: 10,
       wave: 10,
       pat: 15,
       wink: 15,
-      panic: 15,
+      cry: 15,
+      // panic: 15,
     };
     const minLevel = commandsLevels[command];
     const userObj = await Level.findOne({ userId });
@@ -50,6 +53,15 @@ module.exports = async function gifCmds(interaction, actionText) {
         .map((command) => `\`/${command}\``);
       return { access: false, minLevel, availableCmds };
     }
+  }
+  async function getGif(action) {
+    let resp = {};
+    if (action === "cry" || action === "nope") {
+      resp = await ainasepics.get(action);
+    } else {
+      resp = await gifs[action]();
+    }
+    return resp.url;
   }
   try {
     if (usersInCooldown.get(interaction.user.id)) {
@@ -93,7 +105,7 @@ module.exports = async function gifCmds(interaction, actionText) {
       await interaction.editReply("Не знущайся над ботами. Ми хороші)");
       return;
     }
-    const { url } = await gifs[interaction.commandName]();
+    const url = await getGif(interaction.commandName);
     const colors = await getColors(url);
     let title = `${
       interaction.member.nickname
