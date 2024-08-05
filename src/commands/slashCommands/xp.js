@@ -8,10 +8,10 @@ const updateLevel = require("../../utils/updateLevel.js");
 const { RankCardBuilder, Font } = require("canvacord");
 const fs = require("node:fs");
 const gifFrames = require("gif-frames");
-const getLimit = require("../../utils/getNeededXp.js")
+const getLimit = require("../../utils/getNeededXp.js");
 
 async function createRankCard(interaction, userObjDB) {
-  const limit = getLimit(userObjDB.level)
+  const limit = getLimit(userObjDB.level);
   async function createEmptyAvatarBuffer() {
     const promise = fs.promises.readFile("./src/imgs/emptyAvatar.png");
     return await Promise.resolve(promise);
@@ -35,7 +35,7 @@ async function createRankCard(interaction, userObjDB) {
   let prevLevel = 0;
   let prevNeededXp = 0;
   let nowPrewLvl = 0;
-  const neededXp = limit;
+  const neededXp = 5 * Math.pow(curLevel, 2) + 50 * curLevel + 100;
   let xps = userObjDB.xp;
   let curXps = userObjDB.xp;
 
@@ -71,7 +71,6 @@ async function createRankCard(interaction, userObjDB) {
         : interaction.user.username
     )
     .setUsername("@" + interaction.user.username)
-    .setStatus(userGuildObj.presence?.status)
     .setCurrentXP(curXps)
     .setRequiredXP(neededXp)
     .setLevel(userObjDB.xp)
@@ -127,7 +126,7 @@ module.exports = {
         fetchedUser.level = await updateLevel(fetchedUser, targetUserId);
       }
 
-      const limit = getLimit(fetchedUser.level)
+      const limit = getLimit(fetchedUser.level);
 
       const rankCard = await createRankCard(targetUserObj, fetchedUser);
       rankCard.build().then(async (data) => {
