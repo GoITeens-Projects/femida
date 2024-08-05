@@ -20,6 +20,7 @@ const levelSchema = new Schema({
   },
   currentXp: {
     type: Number,
+    max: 150,
     default: 0,
   },
   pinnedLevels: {

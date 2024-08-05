@@ -2,15 +2,14 @@ const Level = require("../models/Level");
 const db = require("mongoose");
 const sameLetters = require("../utils/sameLetters");
 const updateLevel = require("../utils/updateLevel");
-const getLimit = require("../utils/getNeededXp")
 
 module.exports = async function accrualPoints(message) {
+    console.log("limit");
     const userId = message.author.id;
     const studentRoleId = "1953728756273532978"; // Роль 'student'
     const people = await Level.findOne({ userId: userId });
-    const limit = getLimit(people.level)
 
-    if (people.currentXp !== limit) {
+    if (people.currentXp !== 150) {
         if (
             message.content.length > 3 &&
             !message.author.bot &&
@@ -27,10 +26,11 @@ module.exports = async function accrualPoints(message) {
              let upAllXp = people.xp + pointsToAdd;
             console.log("first", updateXp);
 
-            if (updateXp > limit) {
-                updateXp = limit;
-                const up = limit - people.currentXp;
+            if (updateXp > 150) {
+                updateXp = 150;
+                const up = 150 - people.currentXp;
                 upAllXp = people.xp + up
+                console.log("second", updateXp);
             }
 
             await Level.findOneAndUpdate({ userId: userId }, { currentXp: updateXp, xp: upAllXp }); 

@@ -1,6 +1,5 @@
 const Level = require("../models/Level");
 const updateLevel = require("../utils/updateLevel");
-const getLimit = require("../utils/getNeededXp")
 
 module.exports = async function checkRoleInVc(oldState, newState, client) {
   if (newState.channelId) {
@@ -29,13 +28,12 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
           const userIds = members.map((member) => member.user.id);
           userIds.forEach(async (user) => {
             const people = await Level.findOne({ userId: user });
-            const limit = getLimit(people.level)
-            if (people.currentXp !== limit) {
+            if (people.currentXp !== 150) {
               let updateXp = people.currentXp + 30;
               let upAllXp = people.xp + 30;
-              if (updateXp > limit) {
-                updateXp = limit;
-                const up = limit - people.currentXp;
+              if (updateXp > 150) {
+                updateXp = 150;
+                const up = 150 - people.currentXp;
                 upAllXp = people.xp + up;
               }
               await Level.findOneAndUpdate(
@@ -57,13 +55,12 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
                 .roles.cache.has("953795856308510760")
             ) {
               const people = await Level.findOne({ userId: newState.id });
-              const limit = getLimit(people.level)
-              if (people.currentXp !== limit) {
+              if (people.currentXp !== 150) {
                 let updateXp = people.currentXp + 30;
                 let upAllXp = people.xp + 30;
-                if (updateXp > limit) {
-                  updateXp = limit;
-                  const up = limit - people.currentXp;
+                if (updateXp > 150) {
+                  updateXp = 150;
+                  const up = 150 - people.currentXp;
                   upAllXp = people.xp + up;
                 }
                 await Level.findOneAndUpdate(
@@ -97,13 +94,12 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
               .roles.cache.has("953795856308510760")
           ) {
             const people = await Level.findOne({ userId: newState.id });
-            const limit = getLimit(people.level)
-            if (people.currentXp !== limit) {
+            if (people.currentXp !== 150) {
               let updateXp = people.currentXp + 10;
               let upAllXp = people.xp + 10;
-              if (updateXp > limit) {
-                updateXp = limit;
-                const up = limit - people.currentXp;
+              if (updateXp > 150) {
+                updateXp = 150;
+                const up = 150 - people.currentXp;
                 upAllXp = people.xp + up;
               }
               await Level.findOneAndUpdate(
