@@ -1,68 +1,68 @@
-const giftersLevels = require("../constants/giftersLevels")
+const giftersLevels = require("../constants/giftersLevels");
 const Level = require("../models/Level");
-const { google } = require('googleapis');
-const credentials = require('../../google-sheets-toolbox.json');
-const fetch = require('node-fetch');
-
+const { google } = require("googleapis");
+const credentials = require("../../google-sheets-toolbox.json");
+const fetch = require("node-fetch");
 
 module.exports = async (userId, userLevel) => {
-    const userChek = await Level.findOne({ userId})
-    if(!userChek.alreadyWas){
-      await Level.findOneAndUpdate({ userId }, {alreadyWas: [] });
-    }
-    const user = await Level.findOne({ userId})
+  const userChek = await Level.findOne({ userId });
+  if (!userChek.pinnedLevels) {
+    await Level.findOneAndUpdate({ userId }, { pinnedLevels: [] });
+  }
+  const user = await Level.findOne({ userId });
 
-    giftersLevels.forEach(async (gfLevel)=> {
-        if(!user.alreadyWas.includes(gfLevel) && userLevel >= gfLevel){
-          const url = `https://discordlookup.mesalytic.moe/v1/user/${userId}`;
-          const response = await fetch(url, {
-              method: 'GET',
-          });
-  
-          const userData = await response.json();
-          const username = userData.username
+  giftersLevels.forEach(async (gfLevel) => {
+    if (!user.pinnedLevels.includes(gfLevel) && userLevel >= gfLevel) {
+      const url = `https://discordlookup.mesalytic.moe/v1/user/${userId}`;
+      const response = await fetch(url, {
+        method: "GET",
+      });
 
-          const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
-          const spreadsheetId = '1QL7UySs1z3xhKjuNA-80jQrUo3pxXUDQWLH8sP7H938';
+      const userData = await response.json();
+      const username = userData.username;
 
-        const auth = new google.auth.GoogleAuth({
-            credentials,
-            scopes: SCOPES,
-          });
+      const SCOPES = ["https://www.googleapis.com/auth/spreadsheets"];
+      const spreadsheetId = "1QL7UySs1z3xhKjuNA-80jQrUo3pxXUDQWLH8sP7H938";
 
-        const sheets = google.sheets({ version: 'v4', auth });
+      const auth = new google.auth.GoogleAuth({
+        credentials,
+        scopes: SCOPES,
+      });
 
-        const newRow = {
-             values: [
-             { userEnteredValue: { stringValue: username } },
-              { userEnteredValue: { stringValue: userId } },
-            ],
-        };
+      const sheets = google.sheets({ version: "v4", auth });
 
-        async function addRow() {
-          try {
-            const response = await sheets.spreadsheets.values.append({
+      const newRow = {
+        values: [
+          { userEnteredValue: { stringValue: username } },
+          { userEnteredValue: { stringValue: userId } },
+        ],
+      };
+
+      async function addRow() {
+        try {
+          const response = await sheets.spreadsheets.values.append({
             spreadsheetId,
             range: `${gfLevel} Level!A1:D1`,
-            valueInputOption: 'USER_ENTERED',
+            valueInputOption: "USER_ENTERED",
             resource: {
-              values: [newRow.values.map(cell => {
-              if (cell.userEnteredValue.stringValue) {
-                 return cell.userEnteredValue.stringValue;
-              } else if (cell.userEnteredValue.formulaValue !== undefined) {
-                 return cell.userEnteredValue.formulaValue;
-             }
-              })],
+              values: [
+                newRow.values.map((cell) => {
+                  if (cell.userEnteredValue.stringValue) {
+                    return cell.userEnteredValue.stringValue;
+                  } else if (cell.userEnteredValue.formulaValue !== undefined) {
+                    return cell.userEnteredValue.formulaValue;
+                  }
+                }),
+              ],
             },
-            });
-              console.log('Рядок додано успішно:', response.data)
-  } catch (err) {
-    console.error('Помилка при додаванні рядка:', err);
-  }
-}
-
-addRow();
+          });
+          console.log("Рядок додано успішно:", response.data);
+        } catch (err) {
+          console.error("Помилка при додаванні рядка:", err);
         }
-    })
+      }
 
-}
+      addRow();
+    }
+  });
+};
