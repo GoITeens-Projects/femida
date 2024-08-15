@@ -1,6 +1,6 @@
 const Level = require("../models/Level");
 const updateLevel = require("../utils/updateLevel");
-const getLimit = require("../utils/getNeededXp")
+const getLimit = require("../utils/getNeededXp");
 
 module.exports = async function checkRoleInVc(oldState, newState, client) {
   if (newState.channelId) {
@@ -29,7 +29,10 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
           const userIds = members.map((member) => member.user.id);
           userIds.forEach(async (user) => {
             const people = await Level.findOne({ userId: user });
-            const limit = getLimit(people.level)
+            const limit = getLimit(
+              people.level,
+              newState.member.roles.cache.has("953728756273532978")
+            );
             if (people.currentXp !== limit) {
               let updateXp = people.currentXp + 30;
               let upAllXp = people.xp + 30;
@@ -40,7 +43,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
               }
               await Level.findOneAndUpdate(
                 { userId: user },
-                { currentXp: updateXp, xp: upAllXp}
+                { currentXp: updateXp, xp: upAllXp }
               );
               await updateLevel(people, user);
             }
@@ -57,7 +60,12 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
                 .roles.cache.has("953795856308510760")
             ) {
               const people = await Level.findOne({ userId: newState.id });
-              const limit = getLimit(people.level)
+              const limit = getLimit(
+                people.level,
+                voiceChannel.guild.members.cache
+                  .get(user)
+                  .roles.cache.has("953728756273532978")
+              );
               if (people.currentXp !== limit) {
                 let updateXp = people.currentXp + 30;
                 let upAllXp = people.xp + 30;
@@ -68,7 +76,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
                 }
                 await Level.findOneAndUpdate(
                   { userId: newState.id },
-                  { currentXp: updateXp,  xp: upAllXp }
+                  { currentXp: updateXp, xp: upAllXp }
                 );
                 await updateLevel(people, user);
               }
@@ -97,7 +105,12 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
               .roles.cache.has("953795856308510760")
           ) {
             const people = await Level.findOne({ userId: newState.id });
-            const limit = getLimit(people.level)
+            const limit = getLimit(
+              people.level,
+              voiceChannel.guild.members.cache
+                .get(user)
+                .roles.cache.has("953728756273532978")
+            );
             if (people.currentXp !== limit) {
               let updateXp = people.currentXp + 10;
               let upAllXp = people.xp + 10;
@@ -108,7 +121,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
               }
               await Level.findOneAndUpdate(
                 { userId: newState.id },
-                { currentXp: updateXp,  xp: upAllXp }
+                { currentXp: updateXp, xp: upAllXp }
               );
               await updateLevel(people, user);
             }
