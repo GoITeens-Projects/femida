@@ -30,7 +30,8 @@ module.exports = async (id, amount, exeption) => {
   if (exeption) {
     const up = isStudent ? user.xp + amount * 1.25 : user.xp + amount;
     await Level.updateOne({ userId: id }, { xp: up });
-    updateLevel(user, user.id);
+    const newUser = await Level.findOne({ userId: id });
+    await updateLevel(newUser, newUser.userId);
     return up;
   } else {
     const limit = getLimit(user.level, isStudent);
@@ -45,7 +46,8 @@ module.exports = async (id, amount, exeption) => {
       up = limit - user.currentXp;
     }
     await Level.updateOne({ userId: id }, { xp: up, currentXp: curLimit });
-    updateLevel(user, user.id);
+    const newUser = await Level.findOne({ userId: id });
+    await updateLevel(newUser, newUser.userId);
     return up;
   }
 };
