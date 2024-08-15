@@ -1,6 +1,6 @@
-const Level = require("../models/Level");
+const Level = require("../../models/Level");
 const { EmbedBuilder } = require("discord.js");
-const getUsersByIds = require("./getUsersByIds");
+const getUsersByIds = require("../getUsersByIds");
 
 module.exports = async function renderRatingPage(page, perPage, client) {
   try {

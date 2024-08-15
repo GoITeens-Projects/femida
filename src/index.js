@@ -12,25 +12,24 @@ const fs = require("node:fs");
 
 // імпорти функцій
 const addNewMember = require("./interactions/addNewMember.js");
-const accrualPoints = require("./interactions/messages.js");
-const badWords = require("./interactions/badWords.js");
-const checkRoleInVc = require("./interactions/check-role-in-vc.js");
-const database = require("./interactions/database.js");
-const fetchInvites = require("./interactions/fetchInvites.js");
+const accrualPoints = require("./interactions/messages/messages.js");
+const badWords = require("./interactions/messages/badWords.js");
+const checkRoleInVc = require("./interactions/voice/checkRoleInVc.js");
+const database = require("./database.js");
+const fetchInvites = require("./interactions/invites/fetchInvites.js");
 const getInteractionCommands = require("./interactions/getInteractionCommands.js");
 const limitPoints = require("./interactions/limitPoints.js");
 const sendRatingEveryMonth = require("./interactions/sendRatingEveryMonth.js");
 const startClearDatabaseInterval = require("./interactions/startClearDatabase.js");
-const updateInvites = require("./interactions/updateInvites.js");
-const useAntispam = require("./interactions/useAntispam.js");
-const voiceStateUpdate = require("./interactions/voiseStateUpdate.js");
+const updateInvites = require("./interactions/invites/updateInvites.js");
+const useAntispam = require("./interactions/messages/useAntispam.js");
+const voiceStateUpdate = require("./interactions/voice/voiceStateUpdate.js");
 const whenBoost = require("./interactions/whenBoost.js");
-const whenMessageDelete = require("./interactions/whenMessageDelete.js");
-const handleVerification = require("./interactions/handleVerification.js");
-const sendVerification = require("./interactions/sendVerification.js");
-const addStats = require("./interactions/addStats.js");
-const sendStats = require("./interactions/sendStats.js");
-const helpCmd = require("../src/commands/slashCommands/help.js");
+const whenMessageDelete = require("./interactions/messages/whenMessageDelete.js");
+const handleVerification = require("./interactions/verification/handleVerification.js");
+const sendVerification = require("./interactions/verification/sendVerification.js");
+const addStats = require("./interactions/statistics/addStats.js");
+const sendStats = require("./interactions/statistics/sendStats.js");
 
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");

@@ -1,7 +1,7 @@
-const giftersLevels = require("../constants/giftersLevels");
-const Level = require("../models/Level");
+const giftersLevels = require("../../constants/giftersLevels");
+const Level = require("../../models/Level");
 const { google } = require("googleapis");
-const credentials = require("../../google-sheets-toolbox.json");
+const credentials = require("../../../google-sheets-toolbox.json");
 const fetch = require("node-fetch");
 
 module.exports = async (userId, userLevel) => {

@@ -4,11 +4,11 @@ const {
   EmbedBuilder,
 } = require("discord.js");
 const Level = require("../../models/Level");
-const updateLevel = require("../../utils/updateLevel.js");
+const updateLevel = require("../../utils/xp/updateLevel.js");
 const { RankCardBuilder, Font } = require("canvacord");
 const fs = require("node:fs");
 const gifFrames = require("gif-frames");
-const getLimit = require("../../utils/getNeededXp.js");
+const getLimit = require("../../utils/xp/getNeededXp.js");
 
 async function createRankCard(interaction, userObjDB) {
   const limit = getLimit(userObjDB.level);

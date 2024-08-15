@@ -1,12 +1,9 @@
-const { ReactionUserManager } = require("discord.js");
 const Level = require("../models/Level");
-
 
 module.exports = async (interaction, message, newState) => {
   let currentUsers = null;
   console.log(message);
   if (interaction) {
-
     currentUsers = await Level.find({ userId: interaction.user.id });
     if (currentUsers.length === 0) {
       const newUser = new Level({
@@ -20,33 +17,33 @@ module.exports = async (interaction, message, newState) => {
       await newUser.save();
     }
   } else if (message) {
-    if(message.author.bot) return
+    if (message.author.bot) return;
     currentUsers = await Level.find({ userId: message.author.id });
-        if (currentUsers.length === 0) {
-            const newUser = new Level({
-                userId: message.author.id,
-                guildId: message.guildId,
-                xp: 0,
-                currentXp: 0,
-                level: 0,
-            });
+    if (currentUsers.length === 0) {
+      const newUser = new Level({
+        userId: message.author.id,
+        guildId: message.guildId,
+        xp: 0,
+        currentXp: 0,
+        level: 0,
+      });
 
-            await newUser.save();
-        }
-    } else if (newState) {
-        currentUsers = await Level.find({ userId: newState.id });
-        if (currentUsers.length === 0) {
-            const newUser = new Level({
-                userId: newState.id,
-                guildId: newState.guild.id,
-                xp: 0,
-                currentXp: 0,
-                level: 0,
-            });
-
-            await newUser.save();
-        }
-    } else {
-        return;
+      await newUser.save();
     }
+  } else if (newState) {
+    currentUsers = await Level.find({ userId: newState.id });
+    if (currentUsers.length === 0) {
+      const newUser = new Level({
+        userId: newState.id,
+        guildId: newState.guild.id,
+        xp: 0,
+        currentXp: 0,
+        level: 0,
+      });
+
+      await newUser.save();
+    }
+  } else {
+    return;
+  }
 };

@@ -4,9 +4,7 @@ const {
   EmbedBuilder,
 } = require("discord.js");
 const Level = require("../../models/Level");
-const getUsersByIds = require("../../utils/getUsersByIds");
-const paginationFn = require("../../utils/pagination");
-const renderRatingPage = require("../../utils/renderRatingPage");
+const paginationFn = require("../../utils/leaders/pagination");
 
 async function sendError(interaction, description) {
   const errorEmbed = new EmbedBuilder()

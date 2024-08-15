@@ -1,5 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
-const sendVerification = require("../../interactions/sendVerification");
+const sendVerification = require("../../interactions/verification/sendVerification");
 
 module.exports = {
   data: new SlashCommandBuilder()

@@ -1,4 +1,4 @@
-const useSocket = require("../utils/useSocket");
+const useSocket = require("../../utils/useSocket");
 
 module.exports = async function handleVerification(msg) {
   if (!msg.content.toLowerCase().startsWith("verify")) return;

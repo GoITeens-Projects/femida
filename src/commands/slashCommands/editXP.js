@@ -1,7 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const Level = require("../../models/Level");
-const updateLevel = require("../../utils/updateLevel");
-const addPoints = require("../../utils/addPoints")
+const addPoints = require("../../utils/xp/addPoints");
 
 module.exports = {
     data: new SlashCommandBuilder()

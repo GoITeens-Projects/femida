@@ -1,4 +1,4 @@
-const main = require("../index");
+const main = require("../../index");
 module.exports = async function sendLevelNotification({ id, level }) {
   try {
     const channel = await main.client.channels.fetch("1050608203945234442");
