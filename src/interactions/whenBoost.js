@@ -1,5 +1,3 @@
-const Level = require("../models/Level");
-const updateLevel = require("../utils/updateLevel");
 const { EmbedBuilder } = require("discord.js");
 const addPoints = ("../utils/addPoints")
 

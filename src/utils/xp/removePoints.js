@@ -1,4 +1,4 @@
-const Level = require("../models/Level");
+const Level = require("../../models/Level");
 
 module.exports = (id, amount) => {
   Level.findOne({ userId: id })

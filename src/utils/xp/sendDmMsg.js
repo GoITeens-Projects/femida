@@ -1,4 +1,4 @@
-const main = require("../index");
+const main = require("../../index");
 const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 
 module.exports = async function sendDmMsg({ id, level }) {

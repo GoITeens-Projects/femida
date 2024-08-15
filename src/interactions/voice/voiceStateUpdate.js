@@ -1,5 +1,5 @@
-const Level = require("../models/Level");
-const addPoints = require("../utils/addPoints")
+const addPoints = require("../../utils/xp/addPoints");
+const {xps: {voice}} = require('../../constants/config');
 
 module.exports = async(oldState, newState, client) => {
 
@@ -28,7 +28,7 @@ module.exports = async(oldState, newState, client) => {
 
                 const userIds = members.map((member) => member.user.id);
                 userIds.forEach(async(user) => {
-                    await addPoints(user, 20, false)
+                    await addPoints(user, voice, false)
                 });
             }
 
@@ -37,9 +37,7 @@ module.exports = async(oldState, newState, client) => {
             }
 
             if (arrObj.length > 4) {
-                const member = arrObj.get(newState.id);
-                const people = await Level.findOne({ userId: newState.id });
-                await addPoints(newState.id, 20, false)
+                await addPoints(newState.id, voice, false)
         }
     }
 };

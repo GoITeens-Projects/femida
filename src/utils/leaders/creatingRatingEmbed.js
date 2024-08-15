@@ -1,5 +1,5 @@
-const Level = require("../models/Level");
-const getUsersByIds = require("./getUsersByIds");
+const Level = require("../../models/Level");
+const getUsersByIds = require("../getUsersByIds");
 const { EmbedBuilder } = require("discord.js");
 
 module.exports = async (client) => {

@@ -1,5 +1,5 @@
 const { AttachmentBuilder } = require("discord.js");
-const creatingRatingEmbed = require("../utils/creatingRatingEmbed");
+const creatingRatingEmbed = require("../utils/leaders/creatingRatingEmbed");
 const cron = require("cron");
 
 module.exports = async (client) => {

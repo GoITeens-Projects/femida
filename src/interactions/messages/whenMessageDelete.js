@@ -1,4 +1,4 @@
-const removePoints = require("../utils/removePoints");
+const removePoints = require("../../utils/xp/removePoints");
 
 module.exports = async (msg, AuditLogEvent, client) => {
   const logs = await msg.guild.fetchAuditLogs({

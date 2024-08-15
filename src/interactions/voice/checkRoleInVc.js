@@ -1,7 +1,8 @@
-const Level = require("../models/Level");
-const updateLevel = require("../utils/updateLevel");
-const getLimit = require("../utils/getNeededXp")
-const addPoints = require("../utils/addPoints")
+const addPoints = require("../../utils/xp/addPoints");
+const {
+  xps: { voiceWithAdmin },
+  roles: { adminRoles },
+} = require("../../constants/config");
 
 module.exports = async function checkRoleInVc(oldState, newState, client) {
   if (newState.channelId) {
@@ -24,25 +25,26 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
         const members = voiceChannel.members;
 
         if (
-          newState.member.roles.cache.has("953717386224226385") ||
-          newState.member.roles.cache.has("953795856308510760")
+          adminRoles.filter(
+            (role) => newState.member.roles.cache.has(role) === true
+          ).length !== 0
         ) {
           const userIds = members.map((member) => member.user.id);
           userIds.forEach(async (user) => {
-            await addPoints(user, 25, false)
+            await addPoints(user, voiceWithAdmin, false);
           });
         } else {
           const userIds = members.map((member) => member.user.id);
           userIds.forEach(async (user) => {
             if (
-              voiceChannel.guild.members.cache
-                .get(user)
-                .roles.cache.has("953717386224226385") ||
-              voiceChannel.guild.members.cache
-                .get(user)
-                .roles.cache.has("953795856308510760")
+              adminRoles.filter(
+                (role) =>
+                  voiceChannel.guild.members.cache
+                    .get(user)
+                    .roles.cache.has(role) === true
+              ).length !== 0
             ) {
-              await addPoints(newState.id, 25, false)
+              await addPoints(newState.id, voiceWithAdmin, false);
             }
           });
         }
@@ -60,14 +62,14 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
         // console.log(userIds);
         userIds.forEach(async (user) => {
           if (
-            voiceChannel.guild.members.cache
-              .get(user)
-              .roles.cache.has("953717386224226385") ||
-            voiceChannel.guild.members.cache
-              .get(user)
-              .roles.cache.has("953795856308510760")
+            adminRoles.filter(
+              (role) =>
+                voiceChannel.guild.members.cache
+                  .get(user)
+                  .roles.cache.has(role) === true
+            ).length !== 0
           ) {
-            await addPoints(newState.id, 25, false)
+            await addPoints(newState.id, voiceWithAdmin, false);
           }
         });
       }, 600000);

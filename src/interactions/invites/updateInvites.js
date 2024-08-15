@@ -1,4 +1,4 @@
-const addPoints = require("../utils/addPoints");
+const addPoints = require("../../utils/xp/addPoints");
 
 module.exports = async function updateInvites(person, client) {
   client.guilds.cache.each((guild) => {
@@ -14,9 +14,9 @@ module.exports = async function updateInvites(person, client) {
   });
 
   let res = await person.guild.members.fetch();
-  
+
   function up() {
-    res.forEach((member) => {
+    res.forEach(async (member) => {
       if (!member.user.bot) {
         if (
           global.tempObj[String(member.user.id)] !==
@@ -25,12 +25,16 @@ module.exports = async function updateInvites(person, client) {
           global.mainObj[String(member.user.id)] =
             global.tempObj[String(member.user.id)];
           const date = new Date();
-          const month = (date.getFullYear() - member.joinedAt.getFullYear()) * 12 + date.getMonth();
-          if (member.joinedAt.getMonth() < month && global.userList[String(member.user.id)] > 0) {
-            addPoints(member.user.id, 300);
+          const month =
+            (date.getFullYear() - member.joinedAt.getFullYear()) * 12 +
+            date.getMonth();
+          if (
+            member.joinedAt.getMonth() < month &&
+            global.userList[String(member.user.id)] > 0
+          ) {
+            await addPoints(member.user.id, 300);
             global.userList[String(member.user.id)]--;
           }
-          
         }
       }
     });

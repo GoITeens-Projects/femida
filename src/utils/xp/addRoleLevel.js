@@ -1,5 +1,5 @@
 const { config } = require("dotenv");
-const Level = require("../models/Level");
+const Level = require("../../models/Level");
 
 config();
 // тест ролі 

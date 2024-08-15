@@ -1,4 +1,4 @@
-const Level = require("../models/Level");
+const Level = require("../../models/Level");
 const sendLevelNotification = require("./sendLevelNotification");
 const sendDmMsg = require("./sendDmMsg");
 const addRoleLevel = require("./addRoleLevel");

@@ -1,8 +1,8 @@
-const Level = require("../models/Level.js");
-const messages = require("../models/messages.js");
-const antiSpam = require("../constants/antiSpam.js");
-const userMuteCooldowns = require("../constants/newMap.js");
-const addPoints = require("../utils/addPoints.js")
+const Level = require("../../models/Level.js");
+const messages = require("../../models/messages.js");
+const antiSpam = require("../../constants/antiSpam.js");
+const userMuteCooldowns = require("../../constants/newMap.js");
+const addPoints = require("../../utils/xp/addPoints.js");
 
 module.exports = async(message) => {
     // Отримання ідентифікатора користувача та тексту повідомлення
