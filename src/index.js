@@ -28,6 +28,8 @@ const whenBoost = require("./interactions/whenBoost.js");
 const whenMessageDelete = require("./interactions/whenMessageDelete.js");
 const handleVerification = require("./interactions/handleVerification.js");
 const sendVerification = require("./interactions/sendVerification.js");
+const addStats = require("./interactions/addStats.js");
+const sendStats = require("./interactions/sendStats.js");
 const helpCmd = require("../src/commands/slashCommands/help.js");
 
 // імпорт констант
@@ -82,6 +84,7 @@ client.on("ready", async (op) => {
 
 limitPoints();
 sendRatingEveryMonth(client);
+sendStats(client);
 startClearDatabaseInterval();
 antiSpam.messageCount = new Map();
 
@@ -97,12 +100,16 @@ client.on("guildMemberAdd", async (person) => {
     client.guilds.cache.get("1192065857363394621"),
     false
   );
+  await addStats({ date: new Date(), id: person.id, type: "newbies" });
+});
+
+client.on("guildMemberRemove", async (person) => {
+  await addStats({ date: new Date(), id: person.id, type: "membersLeft" });
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
   addNewMember(interaction);
-
   getInteractionCommands(interaction, client);
 });
 
@@ -113,6 +120,7 @@ client.on("messageCreate", async (message) => {
   if (message.content === "бред") message.react("🍞");
   if (message.attachments.size > 0 && message.content === "") return;
   await accrualPoints(message);
+  await addStats({ date: new Date(), id: message.author.id, type: "messages" });
   await useAntispam(message);
   await badWords(message);
 });
