@@ -18,7 +18,7 @@ module.exports = async (msg, AuditLogEvent, client) => {
   const hours = mins / 60;
   const days = hours / 24;
   const weeks = days / 7;
-  if (weeks <= 1 && !user.bot) {
+  if (weeks <= 1 && !user.bot && !target.bot ) {
     removePoints(msg.author.id, 2);
   }
 };

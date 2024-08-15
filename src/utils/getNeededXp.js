@@ -1,9 +1,8 @@
-module.exports = (level) => {
-  // return 5 * Math.pow(level, 2) + 50 * level + 100
+module.exports = (level, isStudent) => {
   if (level <= 1) {
-    return 150;
+    return isStudent ? 150 * 1.25 : 150;
   } else {
-    return 150 * (1 + (level - 1) * 0.1);
+    const standart = 150 * (1 + (level - 1) * 0.1)
+    return isStudent ? standart * 1.25 : standart;
   }
-  // return 150 * (1 + (level - 1) * 0,1)
 };

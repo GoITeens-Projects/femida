@@ -2,6 +2,7 @@ const Level = require("../models/Level.js");
 const messages = require("../models/messages.js");
 const antiSpam = require("../constants/antiSpam.js");
 const userMuteCooldowns = require("../constants/newMap.js");
+const addPoints = require("../utils/addPoints.js")
 
 module.exports = async(message) => {
     // Отримання ідентифікатора користувача та тексту повідомлення
@@ -94,18 +95,11 @@ module.exports = async(message) => {
                         const id = message.author.id;
                         Level.findOne({ userId: id })
                             .exec()
-                            .then((op) => {
+                            .then( async (op) => {
                                 if (op !== null) {
-                                    if (op.currentXp >= 2.5) {
-                                        let exp = op.currentXp - 5 < 0 ? 0 : op.currentXp - 5;
-                                        Level.updateOne({ userId: id }, { currentXp: exp }).then();
-                                        return;
-                                    }
-
-                                    if (op.xp >= 2.5) {
-                                        let exp = op.xp - 5 < 0 ? 0 : op.xp - 5;
-                                        Level.updateOne({ userId: id }, { xp: exp }).then();
-                                        return;
+                                const chek = op.xp - 5 < 0 ? false : true;
+                                if(chek){
+                                await addPoints(id, -5, true)
                                     }
                                 }
                             });

@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const Level = require("../../models/Level");
 const updateLevel = require("../../utils/updateLevel");
+const addPoints = require("../../utils/addPoints")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -81,9 +82,7 @@ module.exports = {
             .setTimestamp();
         if (interaction.options.get("mode").value === "add") {
             const xpToAdd = interaction.options.get("xp").value;
-            userInfo.xp += xpToAdd;
-            await userInfo.save();
-            await updateLevel(userInfo, userInfo.userId);
+            await addPoints(targetUserId, xpToAdd, true)
             const userNewXP = await Level.findOne({ userId: targetUserId });
             await interaction.editReply({
                 embeds: [
@@ -97,9 +96,7 @@ module.exports = {
             if (xpToSubtract > userInfo.xp) {
                 xpToSubtract = userInfo.xp;
             }
-            userInfo.xp -= xpToSubtract;
-            await userInfo.save();
-            await updateLevel(userInfo, userInfo.userId);
+            await addPoints(targetUserId, -xpToSubtract, true)
             const userNewXP = await Level.findOne({ userId: targetUserId });
             await interaction.editReply({
                 embeds: [
