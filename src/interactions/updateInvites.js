@@ -27,7 +27,7 @@ module.exports = async function updateInvites(person, client) {
           const date = new Date();
           const month = (date.getFullYear() - member.joinedAt.getFullYear()) * 12 + date.getMonth();
           if (member.joinedAt.getMonth() < month && global.userList[String(member.user.id)] > 0) {
-            addPoints(member.user.id, 100);
+            addPoints(member.user.id, 300);
             global.userList[String(member.user.id)]--;
           }
           

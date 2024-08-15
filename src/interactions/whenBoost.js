@@ -1,6 +1,7 @@
 const Level = require("../models/Level");
 const updateLevel = require("../utils/updateLevel");
 const { EmbedBuilder } = require("discord.js");
+const addPoints = ("../utils/addPoints")
 
 module.exports = async (oldMember, newMember, client) => {
   if (oldMember.premiumSinceTimestamp || newMember.premiumSinceTimestamp) {
@@ -12,24 +13,8 @@ module.exports = async (oldMember, newMember, client) => {
 
       //? Adding XP for boost
 
-      let userData = await Level.findOne({ userId: userId });
+      await addPoints(userId, 500, true)
 
-      if (userData === null || userData === undefined) {
-        userData = new Level({
-          userId: userId,
-          guildId: newMember.guild.id,
-          xp: 0,
-          level: 0,
-          currentXp: 0,
-        });
-
-        await userData.save(); //? adding new user to DB if he's not there
-      }
-
-      const updatedXp = userData.xp + 200;
-
-      await Level.findOneAndUpdate({ userId: userId }, { xp: updatedXp });
-      await updateLevel(userData, userId);
       //? Sending a message of boost into the system channel
 
       const titleChoose = [
