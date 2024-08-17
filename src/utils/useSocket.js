@@ -1,4 +1,3 @@
-const { clear } = require("../constants/newMap.js");
 const main = require("../index.js");
 const WebSocket = require("ws");
 
@@ -8,7 +7,7 @@ module.exports = function useSocket(obj, msg, waitMsg) {
     ws.close();
     await msg.reply("Час вийшов, посилання для верифікації більше неактивне");
   }, 1000 * 60 * 15);
-  ws.onopen = (evt) => {
+  ws.onopen = () => {
     ws.send(JSON.stringify(obj));
   };
   ws.onmessage = async ({ data }) => {

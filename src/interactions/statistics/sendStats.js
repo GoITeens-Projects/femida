@@ -1,5 +1,7 @@
-const cron = require("cron");
 const fs = require("node:fs");
+const {
+  cooldowns: { statisticsMinutesCooldown },
+} = require("../../constants/config");
 
 module.exports = function sendStats(client) {
   async function getGuild() {
@@ -41,16 +43,12 @@ module.exports = function sendStats(client) {
         voiceActivities: [],
         stageActivities: [],
       });
-      await fs.writeFile(
-        "./src/stats/stats.json",
-        statsTemplate,
-        (err, data) => {
-          if (err) throw err;
-        }
-      );
+      await fs.writeFile("./src/stats/stats.json", statsTemplate, (err) => {
+        if (err) throw err;
+      });
     } catch (err) {
       console.log(`Error occured while sending stats: ${err}`);
     }
   }
-  setInterval(sendStatsFn, 0.25 * 60 * 1000);
+  setInterval(sendStatsFn, statisticsMinutesCooldown * 60 * 1000);
 };

@@ -5,10 +5,6 @@ const addRoleLevel = require("./addRoleLevel");
 const addGifters = require("./addGifters");
 
 module.exports = async function updateLevel({ level, xp }, userId) {
-  let xpForCurrentLvl = 0;
-  for (let i = 0; i < level; i++) {
-    xpForCurrentLvl += 5 * Math.pow(i, 2) + 50 * i + 100;
-  }
   let newLevel = 0;
   function calculateXPForLevel(lvl) {
     let xpForLevel = 0;
