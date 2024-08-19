@@ -1,5 +1,8 @@
 const { EmbedBuilder } = require("discord.js");
-const addPoints = ("../utils/addPoints")
+const addPoints = "../utils/addPoints";
+const {
+  channels: { boostChannel },
+} = require("../constants/config");
 
 module.exports = async (oldMember, newMember, client) => {
   if (oldMember.premiumSinceTimestamp || newMember.premiumSinceTimestamp) {
@@ -11,7 +14,7 @@ module.exports = async (oldMember, newMember, client) => {
 
       //? Adding XP for boost
 
-      await addPoints(userId, 500, true)
+      const addedXp = await addPoints(userId, 500, true);
 
       //? Sending a message of boost into the system channel
 
@@ -28,7 +31,7 @@ module.exports = async (oldMember, newMember, client) => {
         .setColor("#f47fff")
         .setTitle(titleChoose)
         .setDescription(
-          `<@${userId.toString()}> тільки що забустив/ла цей сервер!\nВам нараховано 200 XP. Дякуємо за підтримку💜`
+          `<@${userId.toString()}> тільки що забустив/ла цей сервер!\nВам нараховано ${addedXp} XP. Дякуємо за підтримку💜`
         )
         .setAuthor({
           name: newMember.user.username,
@@ -37,7 +40,7 @@ module.exports = async (oldMember, newMember, client) => {
         .setThumbnail(userIcon)
         .setTimestamp();
 
-      client.channels.fetch("1050608203945234442").then((channel) =>
+      client.channels.fetch(boostChannel).then((channel) =>
         channel
           .send({
             embeds: [boostEmbed],

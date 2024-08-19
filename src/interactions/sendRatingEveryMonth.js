@@ -1,6 +1,9 @@
 const { AttachmentBuilder } = require("discord.js");
-const creatingRatingEmbed = require("../utils/leaders/creatingRatingEmbed");
 const cron = require("cron");
+const creatingRatingEmbed = require("../utils/leaders/creatingRatingEmbed");
+const {
+  channels: { ratingChannel },
+} = require("../constants/config");
 
 module.exports = async (client) => {
   const sendRatingFn = async () => {
@@ -13,7 +16,7 @@ module.exports = async (client) => {
     } else {
       ratingEmbed.data.description = "Привітаємо переможців🥳";
     }
-    client.channels.fetch("1050608203945234442").then((channel) =>
+    client.channels.fetch(ratingChannel).then((channel) =>
       channel
         .send({
           files: attachments,
