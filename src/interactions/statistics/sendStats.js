@@ -24,14 +24,16 @@ module.exports = function sendStats(client) {
           !member.user.bot
       ).size;
       console.log(data);
-      // const resp = await fetch(`https://${process.env.FEMIDA_API}/statistics`, {
-      //   method: "POST",
-      //   body: data,
-      //   headers: {
-      //     "Content-Type": "application/json; charset=UTF-8",
-      //   },
-      // });
-      const status = true;
+      const resp = await fetch(`https://${process.env.FEMIDA_API}/stats`, {
+        method: "POST",
+        body: JSON.stringify({ statistics: data }),
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          Authorization: `Bearer ${process.env.FEMIDA_API_TOKEN}`,
+        },
+      });
+      console.log(resp);
+      const status = resp.ok;
       if (!status) {
         console.log("Something went wrong and the stats weren't send :<");
         return;
