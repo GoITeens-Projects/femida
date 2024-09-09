@@ -17,12 +17,31 @@ module.exports = function sendStats(client) {
       data.totalMembers =
         guild.memberCount -
         guild.members.cache.filter((member) => member.user.bot === true).size;
-      data.online = guild.members.cache.filter(
-        (member) =>
-          member.presence !== null &&
-          member.presence?.status !== "offline" &&
-          !member.user.bot
-      ).size;
+      data.membersStatuses = {
+        online: guild.members.cache.filter(
+          (member) =>
+            member.presence !== null &&
+            member.presence?.status === "online" &&
+            !member.user.bot
+        ).size,
+        inactive: guild.members.cache.filter(
+          (member) =>
+            member.presence !== null &&
+            member.presence?.status === "idle" &&
+            !member.user.bot
+        ).size,
+        dnd: guild.members.cache.filter(
+          (member) =>
+            member.presence !== null &&
+            member.presence?.status === "dnd" &&
+            !member.user.bot
+        ).size,
+        offline: guild.members.cache.filter(
+          (member) =>
+            member.presence === null &&
+            !member.user.bot
+        ).size,
+      };
       console.log(data);
       const resp = await fetch(`https://${process.env.FEMIDA_API}/stats`, {
         method: "POST",
