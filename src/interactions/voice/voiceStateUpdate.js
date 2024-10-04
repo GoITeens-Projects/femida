@@ -2,7 +2,7 @@ const addPoints = require("../../utils/xp/addPoints");
 const {
   xps: { voice, stage },
 } = require("../../constants/config");
-const addStats = require("../../utils/stats/addStats");
+const addStats = require("../../interactions/statistics/addStats");
 
 module.exports = async (oldState, newState, client) => {
   if (newState.channelId) {
