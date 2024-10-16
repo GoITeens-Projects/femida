@@ -104,6 +104,6 @@ module.exports = {
   cooldowns: {
     emojiCmdsCooldown: 30,
     muteCooldown: 60,
-    statisticsMinutesCooldown: 15;
+    statisticsMinutesCooldown: 15,
   },
 };
