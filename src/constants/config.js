@@ -19,6 +19,7 @@ module.exports = {
     baseXpLimit: 150,
   },
   roles: {
+    mutedRole: "1211008108583850074",
     studentRole: "1262374645521190922",
     graduateRole: "",
     adminRoles: ["1192071473892970496", "1192070306362314802"],
@@ -75,6 +76,7 @@ module.exports = {
 //     baseXpLimit: 150,
 //   },
 //   roles: {
+//      mutedRole: "1222130994430349352",
 //     studentRole: "953728756273532978",
 //     graduateRole: "",
 //     adminRoles: ["953717386224226385", "953795856308510760"],

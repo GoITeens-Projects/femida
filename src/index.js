@@ -138,7 +138,7 @@ client.on("messageDelete", async (msg) => {
   if (msg.channel.type === 1) return;
   whenMessageDelete(msg, AuditLogEvent, client);
 });
-
+console.log(TOKEN)
 client.login(TOKEN);
 
 module.exports.client = client;
