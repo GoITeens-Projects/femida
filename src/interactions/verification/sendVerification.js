@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
+const { guildId } = require("../../constants/config");
 
 module.exports = async function sendVerification(
   user,
@@ -9,7 +10,7 @@ module.exports = async function sendVerification(
   const currentHours = new Date().getHours();
   const color = currentHours >= 6 && currentHours < 21 ? "#FFD23F" : "#003366";
   const icon = client
-    ? client.guilds.cache.get("1192065857363394621").iconURL({ dynamic: true })
+    ? client.guilds.cache.get(guildId).iconURL({ dynamic: true })
     : guild.iconURL({ dynamic: true });
   const verificationEmbed = new EmbedBuilder()
     .setColor(color)

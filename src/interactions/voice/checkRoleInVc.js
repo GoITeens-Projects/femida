@@ -23,18 +23,18 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
           .catch((err) => console.log(err));
 
         const members = voiceChannel.members;
-
+        // console.log(members);
         if (
           adminRoles.filter(
             (role) => newState.member.roles.cache.has(role) === true
           ).length !== 0
         ) {
-          const userIds = members.map((member) => member.user.id);
+          const userIds = Object.keys(members).map((key) => members.get(key));
           userIds.forEach(async (user) => {
             await addPoints(user, voiceWithAdmin, false);
           });
         } else {
-          const userIds = members.map((member) => member.user.id);
+          const userIds = Object.keys(members).map((key) => members.get(key));
           userIds.forEach(async (user) => {
             if (
               adminRoles.filter(
@@ -53,12 +53,12 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
       setInterval(async () => {
         let voiceChannel = {};
         await client.channels
-          .fetch(newState.channelId)
+          .fetch(newState.channelId ? newState.channelId : oldState.channelId)
           .then((channel) => (voiceChannel = channel))
           .catch((err) => console.log(err));
 
         const members = voiceChannel.members;
-        const userIds = members.map((member) => member.user.id);
+        const userIds = Object.keys(members).map((key) => members.get(key));
         // console.log(userIds);
         userIds.forEach(async (user) => {
           if (

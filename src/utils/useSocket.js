@@ -1,12 +1,19 @@
 const main = require("../index.js");
+const {
+  guildId,
+  roles: { studentRole },
+} = require("../constants/config.js");
 const WebSocket = require("ws");
 
 module.exports = function useSocket(obj, msg, waitMsg) {
-  const ws = new WebSocket("wss://" + process.env.FEMIDA_API + "/verify");
-  const timerId = setTimeout(async () => {
-    ws.close();
-    await msg.reply("Час вийшов, посилання для верифікації більше неактивне");
-  }, 1000 * 60 * 15);
+  const ws = new WebSocket("ws://" + process.env.FEMIDA_API + "/verify");
+  const timerId = setTimeout(
+    async () => {
+      ws.close();
+      await msg.reply("Час вийшов, посилання для верифікації більше неактивне");
+    },
+    1000 * 60 * 15
+  );
   ws.onopen = () => {
     ws.send(JSON.stringify(obj));
   };
@@ -18,9 +25,9 @@ module.exports = function useSocket(obj, msg, waitMsg) {
     }
     if (resp.user) {
       if (resp.user.discordId !== obj.id) return;
-      const guild = main.client.guilds.cache.get("1192065857363394621");
+      const guild = main.client.guilds.cache.get(guildId);
       const member = await guild.members.fetch(resp.user.discordId);
-      const role = guild.roles.cache.get("1262374645521190922");
+      const role = guild.roles.cache.get(studentRole);
       clearTimeout(timerId);
       member.user.send("Перевір свої ролі на сервері))");
       member.roles.add(role);
