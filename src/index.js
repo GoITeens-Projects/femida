@@ -33,6 +33,7 @@ const sendStats = require("./interactions/statistics/sendStats.js");
 
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");
+const { guildId } = require("./constants/config.js");
 // ініціалізація клієнту
 
 const client = new Client({
@@ -96,7 +97,7 @@ client.on("guildMemberAdd", async (person) => {
   sendVerification(
     person,
     client,
-    client.guilds.cache.get("1192065857363394621"),
+    client.guilds.cache.get(guildId),
     false
   );
   await addStats({ date: new Date(), id: person.id, type: "newbies" });

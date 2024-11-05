@@ -19,12 +19,12 @@ const { nanoid } = require("nanoid");
 // };
 const stats = {};
 class VoiceActivity {
-  constructor({ members, voiceChannelId, startTimeStamp, endTimeStamp }) {
+  constructor({ members, voiceChannelId, startTimestamp, endTimestamp }) {
     this.members = members;
     this.voiceChannelId = voiceChannelId;
-    this.sessionId = nanoid(4);
-    this.startTimeStamp = startTimeStamp;
-    this.endTimeStamp = endTimeStamp;
+    this.sessionId = nanoid(5);
+    this.startTimestamp = startTimestamp;
+    this.endTimestamp = endTimestamp;
     this.type = "voiceActivities";
   }
 }
@@ -33,37 +33,21 @@ module.exports = async (oldState, newState, client) => {
   if (oldState.channel && !newState.channel) {
     try {
       const voiceChannel = await client.channels.fetch(oldState.channelId);
-      // console.log("36 line", voiceChannel.members.size);
-      if (voiceChannel.members.size !== 1) {
+      if (voiceChannel.members.size !== 0) {
         stats[voiceChannel.id].members[
           stats[voiceChannel.id].members.findIndex(
             (member) => member.id === oldState.id
           )
         ].leftTimestamp = Date.now();
-        // console.log('end vc stats', stats[voiceChannel.id]);
-        // if (
-        //   !stats[voiceChannel.id].members.filter(
-        //     (member) => member.leftTimestamp === null
-        //   )[0]
-        // ) {
-        //   const voiceStats = new VoiceActivity({
-        //     members: stats[voiceChannel.id].members,
-        //     voiceChannelId: voiceChannel.id,
-        //   });
-        //   console.log("voiceStats:", voiceStats);
-        // }
         return;
       }
-      stats[voiceChannel.id].endTimestamp = new Date();
-      console.log("member id", oldState.id);
-      console.log("stats voice channel id", stats[voiceChannel.id]);
 
+      stats[voiceChannel.id].endTimestamp = new Date();
       stats[voiceChannel.id].members[
         stats[voiceChannel.id].members.findIndex(
           (member) => member.id === oldState.id
         )
       ].leftTimestamp = Date.now();
-      console.log("end vc stats", stats[voiceChannel.id]);
       if (
         !stats[voiceChannel.id].members.filter(
           (member) => member.leftTimestamp === null
@@ -72,15 +56,29 @@ module.exports = async (oldState, newState, client) => {
         const voiceStats = new VoiceActivity({
           members: stats[voiceChannel.id].members,
           voiceChannelId: voiceChannel.id,
+          endTimestamp: stats[voiceChannel.id].endTimestamp,
+          startTimestamp: stats[voiceChannel.id].startTimestamp,
         });
-        // console.log("voiceStats:", voiceStats);
-      }
 
-      stats[voiceChannel.id].members[
-        stats[voiceChannel.id].members.findIndex(
-          (member) => member.id === oldState.id
-        )
-      ].leftTimestamp = new Date();
+        delete stats[voiceChannel.id];
+        voiceStats.members.forEach((member, index) => {
+          voiceStats.members[index].sessionTimeInHours = Number(
+            (
+              (member.leftTimestamp - member.joinTimestamp) /
+              (1000 * 60 * 60)
+            ).toFixed(3)
+          );
+          voiceStats.members[index].sessionTimeInMinutes = Number(
+            (
+              (member.leftTimestamp - member.joinTimestamp) /
+              (1000 * 60)
+            ).toFixed(1)
+          );
+        });
+        if (voiceStats.members.length === 1) return;
+        await addStats(voiceStats);
+        return;
+      }
     } catch (err) {
       console.log(err);
     }
@@ -106,8 +104,6 @@ module.exports = async (oldState, newState, client) => {
 
       const arrObj = stvoiceChannel.members;
       const chanelMembers = arrObj.map((member) => member.user.id);
-
-      // console.log("arrobj length", arrObj.size);
 
       async function fetchMembers() {
         let voiceChannel = {};
@@ -138,9 +134,6 @@ module.exports = async (oldState, newState, client) => {
 
       if (arrObj.size === 1) {
         stats[stvoiceChannel.id].startTimestamp = new Date();
-        // stats[stvoiceChannel.id] = {
-        //   startTimeStamp: new Date(),
-        // };
       }
 
       stats[stvoiceChannel.id].members.push({
@@ -148,7 +141,6 @@ module.exports = async (oldState, newState, client) => {
         joinTimestamp: Date.now(),
         leftTimestamp: null,
       });
-      // console.log("members", stats[stvoiceChannel.id]);
 
       if (chanelMembers.length === 4) {
         await fetchMembers();
