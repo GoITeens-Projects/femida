@@ -1,5 +1,5 @@
 const { config } = require("dotenv");
-
+const { guildId } = require("../../constants/config.js");
 const Level = require("../../models/Level.js");
 const getLimit = require("./getNeededXp.js");
 const updateLevel = require("./updateLevel.js");
@@ -12,8 +12,8 @@ module.exports = async (id, amount, exeption) => {
   const insistUsers = await Level.find({ userId: id });
   if (insistUsers.length === 0) {
     const newUser = new Level({
-      userId: interaction.user.id,
-      guildId: interaction.guild.id,
+      userId: id,
+      guildId,
       xp: 0,
       currentXp: 0,
       level: 0,

@@ -54,7 +54,7 @@ module.exports = function sendStats(client) {
         ).size,
       };
       data.economy = economy.map((user) => new UserDto(user));
-      console.log(data);
+      // console.log(data);
       // const resp = await fetch(`https://${process.env.FEMIDA_API}/stats`, {
       //   method: "POST",
       //   body: JSON.stringify({ statistics: data }),
