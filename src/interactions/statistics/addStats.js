@@ -26,7 +26,7 @@ module.exports = async function addStats(obj) {
       }
     }
   }
-  if (obj.type === "voiceActivities") {
+  if (obj.type === "voiceActivities" || obj.type === "stageActivities") {
     try {
       const data = JSON.parse(
         fs.readFileSync("./src/stats/stats.json", "utf8")

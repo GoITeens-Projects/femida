@@ -19,13 +19,19 @@ const { nanoid } = require("nanoid");
 // };
 const stats = {};
 class VoiceActivity {
-  constructor({ members, voiceChannelId, startTimestamp, endTimestamp }) {
+  constructor({
+    members,
+    voiceChannelId,
+    startTimestamp,
+    endTimestamp,
+    isStage,
+  }) {
     this.members = members;
     this.voiceChannelId = voiceChannelId;
     this.sessionId = nanoid(5);
     this.startTimestamp = startTimestamp;
     this.endTimestamp = endTimestamp;
-    this.type = "voiceActivities";
+    this.type = isStage ? "stageActivities" : "voiceActivities";
   }
 }
 
@@ -58,8 +64,8 @@ module.exports = async (oldState, newState, client) => {
           voiceChannelId: voiceChannel.id,
           endTimestamp: stats[voiceChannel.id].endTimestamp,
           startTimestamp: stats[voiceChannel.id].startTimestamp,
+          isStage: voiceChannel.type === 13,
         });
-
         delete stats[voiceChannel.id];
         voiceStats.members.forEach((member, index) => {
           voiceStats.members[index].sessionTimeInHours = Number(
@@ -75,6 +81,9 @@ module.exports = async (oldState, newState, client) => {
             ).toFixed(1)
           );
         });
+        voiceStats.totalSessionTime =
+          voiceStats.endTimestamp.getTime() -
+          voiceStats.startTimestamp.getTime();
         if (voiceStats.members.length === 1) return;
         await addStats(voiceStats);
         return;
