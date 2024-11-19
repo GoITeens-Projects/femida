@@ -32,5 +32,9 @@ module.exports = async function sendVerification(
       "Оп, схоже в нас є це один бажаючий верифікуватися)"
     );
   }
-  user.send({ embeds: [verificationEmbed] });
+  try {
+    user.send({ embeds: [verificationEmbed] });
+  } catch (err) {
+    return;
+  }
 };
