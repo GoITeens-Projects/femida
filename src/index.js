@@ -9,13 +9,13 @@ const {
 const { config } = require("dotenv");
 const path = require("node:path");
 const fs = require("node:fs");
-
 // імпорти функцій
 const addNewMember = require("./interactions/addNewMember.js");
 const accrualPoints = require("./interactions/messages/messages.js");
 const badWords = require("./interactions/messages/badWords.js");
 const checkRoleInVc = require("./interactions/voice/checkRoleInVc.js");
 const database = require("./database.js");
+const rabbit = require("./rabbit.js");
 const fetchInvites = require("./interactions/invites/fetchInvites.js");
 const getInteractionCommands = require("./interactions/getInteractionCommands.js");
 const limitPoints = require("./interactions/limitPoints.js");
@@ -80,6 +80,7 @@ config();
 client.on("ready", async (op) => {
   database(client);
   fetchInvites(op, client);
+  rabbit("settings");
 });
 
 limitPoints();
@@ -94,12 +95,7 @@ const TOKEN = process.env.TOKEN;
 
 client.on("guildMemberAdd", async (person) => {
   updateInvites(person, client);
-  sendVerification(
-    person,
-    client,
-    client.guilds.cache.get(guildId),
-    false
-  );
+  sendVerification(person, client, client.guilds.cache.get(guildId), false);
   await addStats({ date: new Date(), id: person.id, type: "newbies" });
 });
 
