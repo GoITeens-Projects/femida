@@ -50,7 +50,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
         }
       }
       fetchMembers();
-      setInterval(async () => {
+      const intervalId = setInterval(async () => {
         let voiceChannel = {};
         await client.channels
           .fetch(newState.channelId ? newState.channelId : oldState.channelId)
@@ -73,6 +73,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
           }
         });
       }, 600000);
+      
     }
   }
 };

@@ -30,6 +30,7 @@ const handleVerification = require("./interactions/verification/handleVerificati
 const sendVerification = require("./interactions/verification/sendVerification.js");
 const addStats = require("./interactions/statistics/addStats.js");
 const sendStats = require("./interactions/statistics/sendStats.js");
+const newVoice = require("./interactions/voice/newVoice.js");
 
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");
@@ -94,12 +95,7 @@ const TOKEN = process.env.TOKEN;
 
 client.on("guildMemberAdd", async (person) => {
   updateInvites(person, client);
-  sendVerification(
-    person,
-    client,
-    client.guilds.cache.get(guildId),
-    false
-  );
+  sendVerification(person, client, client.guilds.cache.get(guildId), false);
   await addStats({ date: new Date(), id: person.id, type: "newbies" });
 });
 
@@ -131,8 +127,9 @@ client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
 
 client.on("voiceStateUpdate", async (oldState, newState) => {
   await addNewMember(false, false, newState);
-  await voiceStateUpdate(oldState, newState, client);
-  await checkRoleInVc(oldState, newState, client);
+  await newVoice(oldState, newState, client);
+  // await voiceStateUpdate(oldState, newState, client);
+  // await checkRoleInVc(oldState, newState, client);
 });
 
 client.on("messageDelete", async (msg) => {
