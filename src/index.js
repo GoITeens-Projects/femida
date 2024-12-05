@@ -15,7 +15,7 @@ const accrualPoints = require("./interactions/messages/messages.js");
 const badWords = require("./interactions/messages/badWords.js");
 const checkRoleInVc = require("./interactions/voice/checkRoleInVc.js");
 const database = require("./database.js");
-const rabbit = require("./rabbit.js");
+const Rabbit = require("./rabbit.js");
 const fetchInvites = require("./interactions/invites/fetchInvites.js");
 const getInteractionCommands = require("./interactions/getInteractionCommands.js");
 const limitPoints = require("./interactions/limitPoints.js");
@@ -81,7 +81,7 @@ config();
 client.on("ready", async (op) => {
   database(client);
   fetchInvites(op, client);
-  rabbit("settings");
+  Rabbit.connect();
 });
 
 limitPoints();
