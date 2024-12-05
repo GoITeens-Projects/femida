@@ -43,7 +43,8 @@ module.exports = async (id, amount, exeption) => {
       : user.currentXp + amount;
     if (curLimit > limit) {
       curLimit = limit;
-      up = limit - user.currentXp;
+      const addAmount = limit - user.currentXp
+      up = user.xp + addAmount;
     }
     await Level.updateOne({ userId: id }, { xp: up, currentXp: curLimit });
     const newUser = await Level.findOne({ userId: id });
