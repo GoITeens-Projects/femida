@@ -1,25 +1,36 @@
 const amqp = require("amqplib");
+const handleSettings = require("./utils/rabbitHandlers/handleSettings");
 
-const consumeMessages = async (queueName) => {
-  try {
-    const connection = await amqp.connect(process.env.RABBIT_URL);
-    const channel = await connection.createChannel();
-    console.log("₍ᐢᐢ₎");
-    await channel.assertQueue(queueName, { durable: true });
-    console.log(`Waiting for messages in queue: ${queueName}`);
-
-    channel.consume(queueName, async (msg) => {
-      if (msg !== null) {
-        const messageContent = JSON.parse(msg.content.toString());
-        console.log("Received message:", messageContent.body.badwords.words);
-        channel.ack(msg);
-        // await handleMessage(messageContent, channel, msg);
+class Rabbit {
+  constructor() {
+    this.connection = {};
+    this.channel = {};
+  }
+  async connect() {
+    try {
+      const connection = await amqp.connect(process.env.RABBIT_URL);
+      const channel = await connection.createChannel();
+      console.log("₍ᐢᐢ₎");
+      this.connect = connection;
+      this.channel = channel;
+      this.consumeMessages();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  async consumeMessages(queueName = "settings") {
+    await this.channel.assertQueue(queueName, { durable: true });
+    this.channel.consume(queueName, async (msg) => {
+      try {
+        if (msg !== null) {
+          const messageContent = JSON.parse(msg.content.toString());
+          await handleSettings(messageContent.body, this.channel, msg);
+        }
+      } catch (err) {
+        console.log("Error while receiving Rabbit message: ", err);
       }
     });
-  } catch (error) {
-    console.error("Error in RabbitMQ consumer:", error);
   }
-};
-// consumeMessages("settings");
+}
 
-module.exports = consumeMessages;
+module.exports = new Rabbit();
