@@ -1,4 +1,5 @@
 const badWords = require("../../constants/badWords");
+const { giveWarn } = require("../../utils/warnSystem");
 const mutedRoleID = "1222130994430349352"; // ID ролі "Muted" NEW
 const adminRoleID = "953717386224226385"; // Замінити на фактичний ID ролі адміністратора
 const moderRoleID = "953795856308510760"; // Замінити на фактичний ID ролі адміністратора
@@ -31,6 +32,7 @@ module.exports = async (message) => {
     // Перевірка наявності поганих слів у повідомленні
     for (const word of badWords) {
       if (content.includes(word)) {
+        giveWarn(userId, "Використання поганих слів");
         // Користувач використав погане слово
         const mutedRole = guild.roles.cache.get(mutedRoleID);
         if (!mutedRole) {
@@ -58,9 +60,7 @@ module.exports = async (message) => {
         if (warnedUsers.get(userId) >= 2) {
           // Видалення повідомлення
           await message.delete();
-          await message.channel.send(
-            `${message.author}, Догрався.`
-          );
+          await message.channel.send(`${message.author}, Догрався.`);
           // Надавання ролі "Muted" користувачеві
           await message.member.roles.add(mutedRole);
           // Зняття ролі "Muted" після muteDuration секунд
