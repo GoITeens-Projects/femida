@@ -1,3 +1,5 @@
 node_modules 
 .env
 google-sheets-toolbox.json
+./src/stats/stats.json
+package-lock.json
