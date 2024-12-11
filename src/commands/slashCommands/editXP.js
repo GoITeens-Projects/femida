@@ -1,6 +1,7 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const Level = require("../../models/Level");
 const addPoints = require("../../utils/xp/addPoints");
+const addNewMember = require("../../interactions/addNewMember")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -61,15 +62,7 @@ module.exports = {
         });
 
         if (!userInfo) {
-            const newUser = new Level({
-                userId: targetUserId,
-                guildId: interaction.guild.id,
-                xp: 0,
-                currentXp: 0,
-                level: 0,
-            });
-
-            await newUser.save();
+           await addNewMember(interaction)
             userInfo = await Level.findOne({
                 userId: targetUserId,
                 guildId: interaction.guild.id,
