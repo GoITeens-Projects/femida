@@ -59,17 +59,32 @@ class WarnSystem {
       console.log("Error while sending ban message", err);
     }
   }
-  async isEnough(warns, id) {
+  async sendDirectCmdMessage(userId, amount, requiredAmount = 5, reason) {
+    const embed = new EmbedBuilder()
+      .setColor("#CF5B2E")
+      .setTitle(
+        "Адміністрація серверу GoITeens прийняла рішення видати тобі варн (попередження)"
+      )
+      .setDescription(
+        `Це ${amount}/${requiredAmount} порушень. Віднині намагайся бути більш чемним(-ою) \n у дотриманні правил нашого серверу`
+      )
+      .addFields({ name: "Причина:", value: `\`${reason}\`` });
+    const user = await main.client.users.fetch(userId);
+    user.send({ embeds: [embed] });
+  }
+  async isEnough(warns, id, sendDirect, reason) {
     const requiredWarns = 5;
-    if (Math.round(warns) >= 3 && warns < requiredWarns)
-      return await this.sendDirectMessage(id, warns, requiredWarns);
+    if (sendDirect && warns < requiredWarns)
+      return await this.sendDirectCmdMessage(id, warns, requiredWarns, reason);
+    if (Math.round(warns) >= 3 && warns < requiredWarns) return;
+    await this.sendDirectMessage(id, warns, requiredWarns);
     if (warns < requiredWarns) return;
     const guild = main.client.guilds.cache.get(guildId);
     await this.sendBanMessage(id);
     await Level.deleteOne({ userId: id });
     // guild.ban(id, { reason: "Достатня кількість попереджень для бану" });
   }
-  async giveWarn(userId, reason) {
+  async giveWarn(userId, reason, sendDirect = false) {
     const currentUser = await Level.findOne({ userId });
     currentUser.warnings.history.push({ date: new Date(), amount: 1, reason });
     const updatedUserObj = await Level.findOneAndUpdate(
@@ -82,12 +97,11 @@ class WarnSystem {
       },
       { new: true }
     );
-    console.log(updatedUserObj.warnings);
-    this.isEnough(updatedUserObj.warnings.amount, userId);
+    this.isEnough(updatedUserObj.warnings.amount, userId, sendDirect, reason);
   }
-  async giveSoftWarn(userId) {
+  async giveSoftWarn(userId, reason, sendDirect = false) {
     const currentUser = await Level.findOne({ userId });
-    currentUser.warnings.history.push({ date: new Date(), amount: 1 });
+    currentUser.warnings.history.push({ date: new Date(), amount: 1, reason });
     const updatedUserObj = await Level.findOneAndUpdate(
       { userId },
       {
@@ -98,7 +112,7 @@ class WarnSystem {
       },
       { new: true }
     );
-    this.isEnough(updatedUserObj.warnings.amount);
+    this.isEnough(updatedUserObj.warnings.amount, userId, sendDirect, reason);
   }
 }
 
