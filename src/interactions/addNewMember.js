@@ -2,7 +2,7 @@ const Level = require("../models/Level");
 
 module.exports = async (interaction, message, newState) => {
   let currentUsers = null;
-  console.log(message);
+  // console.log(message);
   if (interaction) {
     currentUsers = await Level.find({ userId: interaction.user.id });
     if (currentUsers.length === 0) {

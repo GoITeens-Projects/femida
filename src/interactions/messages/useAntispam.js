@@ -1,13 +1,12 @@
 const NodeCache = require("node-cache");
-const Level = require("../../models/Level.js");
-const messages = require("../../models/messages.js");
 const antiSpam = require("../../constants/antiSpam.js");
-const userMuteCooldowns = new NodeCache(); // Ініціалізація node-cache
-const addPoints = require("../../utils/xp/addPoints.js");
-const WarnSystem = require("../../utils/warnSystem.js");
 const {
-  roles: { mutedRole },
+  roles: { adminRoles },
 } = require("../../constants/config.js");
+const WarnSystem = require("../../utils/warnSystem.js");
+const myCache = new NodeCache({
+  stdTTL: 30, // seconds
+});
 
 module.exports = async (message) => {
   const userId = message.author.id;
@@ -15,98 +14,59 @@ module.exports = async (message) => {
 
   try {
     const member = message.guild.members.cache.get(userId);
-    const hasAdminRole = member.roles.cache.has("953717386224226385");
-    const hasModeratorRole = member.roles.cache.has("953795856308510760");
+    const hasAdminRoles = adminRoles.some((role) =>
+      member.roles.cache.has(role)
+    );
 
-    if (hasAdminRole || hasModeratorRole) {
-      return;
-    }
+    if (hasAdminRoles) return;
 
-    const currentTime = Date.now();
+    const cacheKey = `${userId}_${content}`;
 
-    const newMessage = new messages({
-      userId: userId,
-      message: content,
+    const cachedMessages = myCache.get(cacheKey) || [];
+
+    cachedMessages.push({
+      messageId: message.id,
+      channelId: message.channel.id,
     });
-    await newMessage.save();
 
-    if (!userMuteCooldowns.has(userId)) {
-      userMuteCooldowns.set(userId, currentTime, 1); // Зберігання користувача в node-cache на 1 секунду
+    myCache.set(cacheKey, cachedMessages);
+    console.log("Cached messages length:", cachedMessages.length);
 
-      setTimeout(async () => {
-        try {
-          const countOfSameMessages = await messages.countDocuments({
-            userId: userId,
-            message: content,
-          });
+    if (cachedMessages.length >= antiSpam.warnThreshold) {
+      if (cachedMessages.length >= antiSpam.muteTreshold) {
+        await message.guild.members.cache
+          .get(userId)
+          .timeout(60000, "Мут за спам");
+        await WarnSystem.giveWarn(
+          userId,
+          "Спрацювання системи антиспаму",
+          true
+        );
+        await message.channel.send(`<@${userId}> ${antiSpam.muteMessage}`);
+      } else {
+        await message.channel.send(`<@${userId}> ${antiSpam.warnMessage}`);
+        await WarnSystem.giveSoftWarn(userId, "Мут за спам", false);
+        for (const cachedMsg of cachedMessages) {
+          try {
+            const channel = message.guild.channels.cache.get(
+              cachedMsg.channelId
+            );
+            if (!channel) continue;
 
-          const userMessages = await message.channel.messages.fetch({
-            limit: 100,
-          });
+            const spamMessage = await channel.messages
+              .fetch(cachedMsg.messageId)
+              .catch(() => null);
+            if (!spamMessage) continue;
 
-          const userSpamMessages = userMessages.filter(
-            (msg) =>
-              msg.author.id === userId &&
-              msg.content === content &&
-              msg.id !== message.id
-          );
-
-          for (const msg of userSpamMessages.values()) {
-            try {
-              await msg.delete();
-            } catch (error) {
-              console.error("Error deleting message:", error);
-            }
+            await spamMessage.delete();
+          } catch (error) {
+            console.error("Error deleting message:", error);
           }
-
-          if (countOfSameMessages >= antiSpam.warnThreshold) {
-            if (countOfSameMessages >= antiSpam.muteTreshold) {
-              const lastMuteTime = userMuteCooldowns.get(userId);
-              const muteCooldown = 60 * 1000;
-
-              if (!lastMuteTime || currentTime - lastMuteTime > muteCooldown) {
-                const muteRole = message.guild.roles.cache.find(
-                  (role) => role.id === mutedRole
-                );
-
-                if (muteRole) {
-                  if (member) {
-                    await member.roles.add(muteRole);
-                    await message.channel.send(
-                      `<@${userId}> ${antiSpam.muteMessage}`
-                    );
-
-                    userMuteCooldowns.set(userId, currentTime);
-
-                    setTimeout(async () => {
-                      try {
-                        await member.roles.remove(muteRole);
-                      } catch (error) {
-                        console.error("Error removing mute role:", error);
-                      }
-                    }, antiSpam.unMuteTime * 1000);
-                  }
-                }
-              }
-            } else {
-              await message.channel.send(antiSpam.warnMessage);
-              const levelRecord = await Level.findOne({ userId: userId });
-              if (levelRecord) {
-                const newXP = Math.max(levelRecord.xp - 5, 0);
-                await addPoints(userId, newXP - levelRecord.xp, true);
-              }
-            }
-
-            WarnSystem.giveWarn(userId);
-          }
-
-          userMuteCooldowns.del(userId);
-        } catch (error) {
-          console.error("Error in spam check timeout:", error);
         }
-      }, 1000);
+        return;
+      }
     }
-  } catch (error) {
-    console.error("Error handling message:", error);
+  } catch (err) {
+    console.error("antispamErr:", err);
   }
 };
