@@ -1,84 +1,60 @@
-const badWords = require("../../constants/badWords");
-const { giveWarn } = require("../../utils/warnSystem");
+// const badWords = require("../../constants/badWords");
+const {
+  roles: { adminRoles },
+} = require("../../constants/config");
+const { giveWarn, giveSoftWarn } = require("../../utils/warnSystem");
 const mutedRoleID = "1222130994430349352"; // ID ролі "Muted" NEW
 const adminRoleID = "953717386224226385"; // Замінити на фактичний ID ролі адміністратора
 const moderRoleID = "953795856308510760"; // Замінити на фактичний ID ролі адміністратора
 const muteDuration = 60;
-
+const SettingsInterface = require("../../utils/settings");
+const Level = require("../../models/Level");
 // Мапа для зберігання кількості використань поганих слів кожним користувачем
 const warnedUsers = new Map();
 
 module.exports = async (message) => {
-  const userId = message.author.id;
-  const content = message.content.toLowerCase();
-  const guild = message.guild;
-
   try {
-    // Пропустити повідомлення від адміністратора
-    if (message.member.roles.cache.has(adminRoleID || moderRoleID)) {
+    if (
+      !message.member.roles.cache.some((role) => adminRoles.includes(role.id))
+    ) {
       return;
     }
 
-    // Якщо користувач є в списку використань поганих слів, збільшуємо лічильник
-    if (warnedUsers.has(userId)) {
-      warnedUsers.set(userId, warnedUsers.get(userId) + 1);
-    } else {
-      // Якщо користувач не є в списку, додаємо його туди зі значенням 1
-      warnedUsers.set(userId, 1);
-    }
+    const settings = await SettingsInterface.getSettings();
+    // console.log(settings.badwords.words);
+    for (const word of settings.badwords.words) {
+      // console.log(message.content.toLowerCase(), word.toLowerCase());
+      if (!message.content.toLowerCase().includes(word.toLowerCase())) continue;
 
-    let warned = false; // Флаг, який вказує, чи надано попередження
-
-    // Перевірка наявності поганих слів у повідомленні
-    for (const word of badWords) {
-      if (content.includes(word)) {
-        giveWarn(userId, "Використання поганих слів");
-        // Користувач використав погане слово
-        const mutedRole = guild.roles.cache.get(mutedRoleID);
-        if (!mutedRole) {
-          console.error("Muted role not found.");
-          return;
-        }
-
-        // Перевірка, чи користувач вже в замуті
-        if (message.member.roles.cache.has(mutedRoleID)) {
-          await message.channel.send(
-            `${message.author}, Ти вже в муті за використання поганих слів!`
+      const userObj = await Level.findOne({ userId: message.author.id });
+      if (userObj) {
+        if (userObj.warnings?.amount > 0) {
+          await giveWarn(
+            message.author.id,
+            "Неодноразове використання нецензурної лексики"
           );
-          return;
-        }
-
-        // Якщо це перше використання поганого слова, надсилаємо попередження
-        if (warnedUsers.get(userId) === 1) {
-          await message.channel.send(
-            `${message.author}, Не використовуй погані слова! (останнє попередження) :warning:`
+          message.channel.send(
+            `<@${message.author.id}> не використовуй нецензурну лексику! Додаю тобі твій черговий варн`
           );
-          warned = true;
+          await message.member.timeout(
+            30 * 1000,
+            "Не перше використання нецензурної лайки"
+          );
+          message.delete();
+          break;
+        } else {
+          await giveSoftWarn(
+            message.author.id,
+            "Використання нецензурної лексики (вперше)"
+          );
+          message.channel.send(
+            `<@${message.author.id}> не використовуй нецензурну лексику! \n Так як у тебе це вперше, ти отримав(-ла) "м'яке" попередження`
+          );
+          message.delete();
+          break;
         }
-
-        // Якщо це друге або наступні використання, накладаємо мут
-        if (warnedUsers.get(userId) >= 2) {
-          // Видалення повідомлення
-          await message.delete();
-          await message.channel.send(`${message.author}, Догрався.`);
-          // Надавання ролі "Muted" користувачеві
-          await message.member.roles.add(mutedRole);
-          // Зняття ролі "Muted" після muteDuration секунд
-          setTimeout(async () => {
-            await message.member.roles.remove(mutedRole);
-            await message.channel.send(
-              `${message.author}, Ти більше не в муті.`
-            );
-          }, muteDuration * 1000);
-        }
-
-        break; // Вийти з циклу, якщо знайдено погане слово
       }
-    }
-
-    // Якщо не було надано попередження і не було накладено мут
-    if (!warned && warnedUsers.get(userId) === 1) {
-      // Нічого не зробити, можливо, додати додаткову логіку тут
+      // const mutedRole = guild.roles.cache.get(mutedRoleID);
     }
   } catch (error) {
     console.error("Error processing message:", error);
