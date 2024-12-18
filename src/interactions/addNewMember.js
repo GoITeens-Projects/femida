@@ -1,4 +1,5 @@
 const Level = require("../models/Level");
+const { guildId } = require("../constants/config.js");
 
 module.exports = async (interaction, message, newState) => {
   let currentUsers = null;
@@ -8,7 +9,7 @@ module.exports = async (interaction, message, newState) => {
     if (currentUsers.length === 0) {
       const newUser = new Level({
         userId: interaction.user.id,
-        guildId: interaction.guild.id,
+        guildId: guildId,
         xp: 0,
         currentXp: 0,
         level: 0,
@@ -22,7 +23,7 @@ module.exports = async (interaction, message, newState) => {
     if (currentUsers.length === 0) {
       const newUser = new Level({
         userId: message.author.id,
-        guildId: message.guildId,
+        guildId: guildId,
         xp: 0,
         currentXp: 0,
         level: 0,
@@ -35,7 +36,7 @@ module.exports = async (interaction, message, newState) => {
     if (currentUsers.length === 0) {
       const newUser = new Level({
         userId: newState.id,
-        guildId: newState.guild.id,
+        guildId: guildId,
         xp: 0,
         currentXp: 0,
         level: 0,
