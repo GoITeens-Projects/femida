@@ -50,7 +50,8 @@ module.exports = function sendStats(client) {
             !member.user.bot
         ).size,
         offline: guild.members.cache.filter(
-          (member) => member.presence === null && !member.user.bot
+          (member) => (member.presence === null || member.presence?.status === "offline") && !member.user.bot
+
         ).size,
       };
       data.economy = economy.map((user) => new UserDto(user));
