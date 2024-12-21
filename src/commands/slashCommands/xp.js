@@ -87,6 +87,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("xp")
     .setDescription("Виводить XP користувача")
+    .setDMPermission(false)
     .addUserOption((option) =>
       option
         .setName("target-user")

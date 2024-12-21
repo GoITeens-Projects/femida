@@ -7,6 +7,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("subtract-present-points")
     .setDescription("Відняти XP після отримання подарунка")
+    .setDMPermission(false)
     .addUserOption((option) =>
       option
         .setName("target-user")

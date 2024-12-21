@@ -3,29 +3,20 @@ const {
   roles: { adminRoles },
 } = require("../../constants/config");
 const { giveWarn, giveSoftWarn } = require("../../utils/warnSystem");
-const mutedRoleID = "1222130994430349352"; // ID ролі "Muted" NEW
-const adminRoleID = "953717386224226385"; // Замінити на фактичний ID ролі адміністратора
-const moderRoleID = "953795856308510760"; // Замінити на фактичний ID ролі адміністратора
-const muteDuration = 60;
 const SettingsInterface = require("../../utils/settings");
 const Level = require("../../models/Level");
-// Мапа для зберігання кількості використань поганих слів кожним користувачем
-const warnedUsers = new Map();
 
 module.exports = async (message) => {
   try {
     if (
       !message.member.roles.cache.some((role) => adminRoles.includes(role.id))
-    ) {
+    )
       return;
-    }
 
     const settings = await SettingsInterface.getSettings();
-    // console.log(settings.badwords.words);
+    console.log(settings.badwords.words);
     for (const word of settings.badwords.words) {
-      // console.log(message.content.toLowerCase(), word.toLowerCase());
       if (!message.content.toLowerCase().includes(word.toLowerCase())) continue;
-
       const userObj = await Level.findOne({ userId: message.author.id });
       if (userObj) {
         if (userObj.warnings?.amount > 0) {
@@ -36,11 +27,11 @@ module.exports = async (message) => {
           message.channel.send(
             `<@${message.author.id}> не використовуй нецензурну лексику! Додаю тобі твій черговий варн`
           );
+          await message.delete();
           await message.member.timeout(
             30 * 1000,
             "Не перше використання нецензурної лайки"
           );
-          message.delete();
           break;
         } else {
           await giveSoftWarn(

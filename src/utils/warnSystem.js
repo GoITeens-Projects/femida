@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, messageLink } = require("discord.js");
 const Level = require("../models/Level");
 const { guildId } = require("../constants/config");
 const main = require("../index");
@@ -17,7 +17,7 @@ class WarnSystem {
         Math.round(diffAmountWarns) === diffAmountWarns ? 0 : 1;
       const roundedAmount = Math.round(amount);
       const embed = new EmbedBuilder()
-        .setTitle("Вітаю тебе, пане порушнику!")
+        .setTitle("Вітаю тебе, пане(-і) порушнику(-це)!")
         .setColor("#F5761A")
         .setDescription(
           `Ти порушив/ла правила вже ${roundedAmount} раз${
@@ -113,6 +113,61 @@ class WarnSystem {
       { new: true }
     );
     this.isEnough(updatedUserObj.warnings.amount, userId, sendDirect, reason);
+  }
+  async sendRemoveWarnMsg(userId, amount, newSum) {
+    const guild = main.client.guilds.cache.get(guildId);
+    const user = await main.client.users.fetch(userId);
+    const embed = new EmbedBuilder()
+      .setTitle(
+        `Адміни прийняли рішення забрати в тебе ${
+          amount === 1
+            ? "один варн"
+            : amount === 0.5
+            ? "один софт варн"
+            : `декілька варнів`
+        }`
+      )
+      .setColor("#203559")
+      .setDescription(
+        `Точна кількість знятих варнів: \`${amount.toFixed(
+          1
+        )}\` \n Нова сума варнів: \`${newSum}\``
+      )
+      .setThumbnail(guild.iconURL({ dynamic: true }))
+      .setFooter({ text: "Вибач за недорозуміння" });
+    await user.send({ embeds: [embed] });
+  }
+  async removeWarn(userId, amount) {
+    const user = await Level.findOne({ userId });
+    console.log(user.warnings);
+    if (!user) {
+      return {
+        ok: false,
+        message:
+          "Користувача не знайдено у базі даних, відповідно і попереджень він мати не може",
+      };
+    }
+    if (!user.warnings || !user.warnings?.amount) {
+      return {
+        ok: false,
+        message: "У користувача не було і не має варнів",
+      };
+    }
+    let warnsAmount = amount;
+    if (user.warnings.amount < amount) {
+      warnsAmount = user.warnings.amount;
+    }
+    const updatedUser = await Level.findOneAndUpdate(
+      { userId },
+      { warnings: { amount: user.warnings.amount - warnsAmount } },
+      { new: true }
+    );
+    await this.sendRemoveWarnMsg(
+      userId,
+      warnsAmount,
+      updatedUser.warnings.amount
+    );
+    return { ok: true, message: "Операція пройшла успішно" };
   }
 }
 
