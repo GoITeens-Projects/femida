@@ -4,9 +4,8 @@ const gifCmds = require("../../interactions/gifCmds");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("highfive")
-    .setDescription(
-      "Дай п'ять комусь з учасників (　＾＾)人(＾＾　)"
-    )
+    .setDescription("Дай п'ять комусь з учасників (　＾＾)人(＾＾　)")
+    .setDMPermission(false)
     .addUserOption((option) =>
       option
         .setName("target-user")

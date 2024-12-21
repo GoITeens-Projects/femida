@@ -11,6 +11,7 @@ async function sendError(interaction, description) {
     .setTitle("Помилка")
     .setColor("#D04848")
     .setDescription(description)
+    .setDMPermission(false)
     .setThumbnail("attachment://catError.gif");
   const attachments = [
     new AttachmentBuilder("src/imgs/catError.gif", "catError.gif"),

@@ -5,12 +5,11 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("cry")
     .setDescription("Поплач у чат, якщо хочеться ＞︿＜")
+    .setDMPermission(false)
     .addUserOption((option) =>
       option
         .setName("target-user")
-        .setDescription(
-          "Нікнейм учасника у якому ти розчарований"
-        )
+        .setDescription("Нікнейм учасника у якому ти розчарований")
         .setRequired(true)
     ),
 

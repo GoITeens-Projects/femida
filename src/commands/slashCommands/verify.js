@@ -4,7 +4,8 @@ const sendVerification = require("../../interactions/verification/sendVerificati
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("verify")
-    .setDescription("Верифікація учнів GoIteens"),
+    .setDescription("Верифікація учнів GoIteens")
+    .setDMPermission(false),
 
   async execute(interaction) {
     await interaction.deferReply({
@@ -24,7 +25,8 @@ module.exports = {
     } catch (err) {
       console.log("Verify cmd error - " + err);
       await interaction.editReply({
-        content: "Виникла дивна помилка. Перевір налаштування особистих повідомлень",
+        content:
+          "Виникла дивна помилка. Перевір налаштування особистих повідомлень",
         ephemeral: true,
       });
     }

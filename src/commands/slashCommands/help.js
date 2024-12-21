@@ -4,7 +4,8 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("info")
-    .setDescription("Можливості боту"),
+    .setDescription("Можливості боту")
+    .setDMPermission(false),
 
   async execute(interaction) {
     let currentColor = "";
@@ -35,7 +36,7 @@ module.exports = {
         currentColor = "#FFC73E";
         break;
     }
-    
+
     const embed = new EmbedBuilder()
       .setTitle(`Що вміє цей бот?`)
       .setColor(currentColor)

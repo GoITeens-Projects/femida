@@ -5,6 +5,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("poke")
     .setDescription("Тицьни когось з учасників (｡- .•)")
+    .setDMPermission(false)
     .addUserOption((option) =>
       option
         .setName("target-user")
