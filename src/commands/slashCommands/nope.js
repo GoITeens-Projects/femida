@@ -5,6 +5,7 @@ module.exports = {
   data: new SlashCommandBuilder()
     .setName("nope")
     .setDescription("Вислови свою незгоду ( `ε´ )")
+    .setDMPermission(false)
     .addUserOption((option) =>
       option
         .setName("target-user")
