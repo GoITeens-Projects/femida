@@ -5,6 +5,19 @@ const SettingSchema = new mongoose.Schema({
     enabled: { type: Boolean, default: true },
     words: [String],
     exceptions: [String],
+    actions: {
+      giveWarn: { type: Boolean, default: true },
+      mute: {
+        enabled: { type: Boolean, default: true },
+        muteTimeMs: {
+          type: Number,
+          default: 1000 * 60 * 60,
+        },
+      },
+      deleteMsg: { type: Boolean, default: true },
+      ignoreAdmins: { type: Boolean, default: true },
+      notifyUser: { type: Boolean, default: true },
+    },
   },
   spam: {
     enabled: { type: Boolean, default: true },

@@ -12,7 +12,7 @@ class SettingsInterface {
     return cachedSettings;
   }
   async setSettings(settingsObj) {
-    console.log("new", settingsObj);
+    // console.log("new", settingsObj);
     settingsCache.set("sets", settingsObj);
     const currentSettings = await Settings.findOne({});
     if (!currentSettings) {

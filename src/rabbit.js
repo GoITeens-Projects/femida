@@ -22,6 +22,7 @@ class Rabbit {
     await this.channel.assertQueue(queueName, { durable: true });
     this.channel.consume(queueName, async (msg) => {
       try {
+        console.log("Rabbit MSG", msg);
         if (msg !== null) {
           const messageContent = JSON.parse(msg.content.toString());
           await handleSettings(messageContent.body, this.channel, msg);
