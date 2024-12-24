@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "apis": [
+    {
+      "identifier": "virustotal",
+      "source": "@virustotal/v3.0#1k2godhyl0v06jsw",
+      "integrity": "sha512-GvayVXpuGOurq9nQHpjCMRKnvmtHtl0J0sdpaTgkbmX77R3ZClT0Tf+qDqgFFUJ6/Z0VVz+C/MDHvg1mDS4Baw==",
+      "installerVersion": "6.1.2"
+    }
+  ]
+}
