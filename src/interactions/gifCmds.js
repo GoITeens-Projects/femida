@@ -34,13 +34,13 @@ module.exports = async function gifCmds(interaction, actionText) {
       hug: 0,
       slap: 0,
       poke: 0,
-      highfive: 5,
+      highfive: 0, //? 5
       // cuddle: 10,
-      nope: 10,
-      wave: 10,
-      pat: 15,
-      wink: 15,
-      cry: 15,
+      nope: 0, //?10
+      wave: 0, //?10
+      pat: 0, //?15
+      wink: 0, //?15
+      cry: 0, //?15
       // panic: 15,
     };
     const minLevel = commandsLevels[command];

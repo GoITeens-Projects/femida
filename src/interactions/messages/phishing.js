@@ -3,8 +3,28 @@ const phishingRegex =
   /^(https?:\/\/)?(www\.)?((\d{1,3}\.){3}\d{1,3}|[a-zA-Z0-9-]+\.(?!com|net|org|edu|gov|io|cz|sk)[a-zA-Z]+)(\/|$)/;
 const redirectionRegex =
   /(redirect|url|next|goto|out|forward)=https?:\/\/[^\s&]+/i;
+const {
+  roles: { adminRoles },
+} = require("../../constants/config");
+const phishUrls = [
+  "surl.li",
+  "bit.ly",
+  "goo.gl",
+  "t1p.de",
+  "Is.gd",
+  "tinyurl.com",
+  ".ly",
+  "bit.do",
+  "su.pr",
+  "rb.gy",
+  "u.to",
+  "is.gd",
+];
 
 module.exports = async (message) => {
+  const member = message.guild.members.cache.get(message.author.id);
+  if (adminRoles.some((role) => member.roles.cache.has(role))) return;
+
   const content = message.content;
 
   const matches = [...content.matchAll(urlRegex)];
@@ -15,11 +35,25 @@ module.exports = async (message) => {
 
       console.log(`Знайдено посилання: ${url}`);
 
+      if (phishUrls.some((url) => url.includes(url))) {
+        await message.guild.members.cache
+          .get(message.author.id)
+          .timeout(
+            1000 * 60 * 60 * 24 * 1,
+            "Мут за фішинг(скорочувач посилань)"
+          );
+        await message.delete();
+        return;
+      }
+
       if (url.includes("discord.gg") && !url.includes("eMEVTNvg")) {
         await message.delete();
       }
 
       if (phishingRegex.test(url) || redirectionRegex.test(url)) {
+        await message.guild.members.cache
+          .get(message.author.id)
+          .timeout(1000 * 60 * 60 * 24 * 7, "Мут за фішинг");
         await message.delete();
       } else {
         console.log("Itʼs secure link");

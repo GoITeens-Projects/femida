@@ -2,10 +2,13 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 // const { execute } = require("./xp");
 const Level = require("../../models/Level");
 const addPoints = require("../../utils/xp/addPoints");
+const {
+  roles: { adminRoles },
+} = require("../../constants/config");
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName("subtract-present-points")
+    .setName("subtract-present-xp")
     .setDescription("Відняти XP після отримання подарунка")
     .setDMPermission(false)
     .addUserOption((option) =>
@@ -16,7 +19,7 @@ module.exports = {
     )
     .addNumberOption((option) =>
       option
-        .setName("present-xp")
+        .setName("amount")
         .setDescription("Скільки XP ви хочете відняти користувачеві")
         .setRequired(true)
     ),
@@ -27,16 +30,10 @@ module.exports = {
       return;
     }
 
-    const allowedRoles = [
-      "953717386224226385",
-      "953795856308510760",
-      "1192066790717661245",
-    ];
-
     const member = interaction.guild.members.cache.get(interaction.user.id);
 
     const hasAllowedRole = member.roles.cache.some((role) =>
-      allowedRoles.includes(role.id)
+      adminRoles.includes(role.id)
     );
 
     if (!hasAllowedRole) {
@@ -62,23 +59,42 @@ module.exports = {
       await interaction.reply("Нажаль такого юзера не знайдено(");
     }
 
+    if (!userInfo.presentXp) {
+      userInfo = await Level.findOneAndUpdate(
+        { userId: targetUserId },
+        { presentXp: userInfo.xp },
+        { new: true }
+      );
+    }
+
     const replyEmbed = new EmbedBuilder()
       .setTitle("Операція прошла успішно")
       .setColor("#FFD23F")
       .setTimestamp();
 
-    let xpToSubtract = interaction.options.get("present-xp");
+    let xpToSubtract = interaction.options.get("amount").value;
 
     if (xpToSubtract > userInfo.presentXp) {
       xpToSubtract = userInfo.presentXp;
     }
+    console.log(userInfo.presentXp);
+    console.log(xpToSubtract);
 
-    await addPoints(targetUserId, -xpToSubtract, true);
-    const newPresentXp = await Level.findOne({ userId: targetUserId });
+    // await addPoints(targetUserId, -xpToSubtract, true);
+    const subtractPresent = userInfo.presentXp - xpToSubtract;
+    const updatedUserInfo = await Level.findOneAndUpdate(
+      {
+        userId: targetUserId,
+        guildId: interaction.guild.id,
+      },
+      { presentXp: subtractPresent },
+      { new: true }
+    );
+    // const newPresentXp = await Level.findOne({ userId: targetUserId });
     await interaction.editReply({
       embeds: [
         replyEmbed.setDescription(
-          `${xpToSubtract} present-xp було віднято у ${targetUserObj.user.tag}. Новий present-xp у користувача \`${newPresentXp.presentXp}\``
+          `${xpToSubtract} бали для подарунків було знято у ${targetUserObj.user.tag}. Оновлена кількість: \`${updatedUserInfo.presentXp}\``
         ),
       ],
     });

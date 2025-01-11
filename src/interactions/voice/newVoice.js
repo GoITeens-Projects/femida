@@ -68,7 +68,6 @@ async function handlePointsDistribution(voiceChannel, client) {
   }
 }
 
-
 module.exports = async (oldState, newState, client) => {
   const oldChannel = oldState.channelId
     ? await client.channels.fetch(oldState.channelId)
@@ -118,8 +117,7 @@ module.exports = async (oldState, newState, client) => {
 
         voiceStats.totalSessionTime =
           voiceStats.endTimestamp - voiceStats.startTimestamp;
-
-        await addStats(voiceStats);
+        if (voiceStats.members.length !== 1) await addStats(voiceStats);
         delete stats[voiceChannel.id];
       }
     }

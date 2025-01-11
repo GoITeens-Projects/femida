@@ -28,22 +28,17 @@ module.exports = {
   async execute(interaction) {
     try {
       await interaction.deferReply();
-      if (!interaction.inGuild()) {
+      
+      if (
+        !interaction.member.roles.cache.some((role) =>
+          adminRoles.includes(role.id)
+        )
+      ) {
         await interaction.editReply(
-          "Ви не можете запустити цю команду не на сервері"
+          "Тільки адміністрація має право використовувати цю команду🙃"
         );
         return;
       }
-    //   if (
-    //     !interaction.member.roles.cache.some((role) =>
-    //       adminRoles.includes(role.id)
-    //     )
-    //   ) {
-    //     await interaction.editReply(
-    //       "Тільки адміністрація має право використовувати цю команду🙃"
-    //     );
-    //     return;
-    //   }
       const data = {
         userId: interaction.options.get("target-user")?.value,
         amount: interaction.options.get("amount")?.value,

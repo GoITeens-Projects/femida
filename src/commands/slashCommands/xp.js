@@ -145,7 +145,13 @@ module.exports = {
             }`
           )
           .setDescription(
-            `Використано добового ліміту XP  \`${fetchedUser.currentXp} / ${limit}\``
+            `Використано добового ліміту  \`${
+              fetchedUser.currentXp
+            } / ${limit}\` XP ${
+              fetchedUser.presentXp
+                ? `\n Можна обміняти \`${fetchedUser.presentXp}\` XP`
+                : ""
+            }`
           )
           .setColor("White")
           .setImage("attachment://rankcard.png");

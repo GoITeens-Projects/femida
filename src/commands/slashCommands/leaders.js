@@ -11,7 +11,6 @@ async function sendError(interaction, description) {
     .setTitle("Помилка")
     .setColor("#D04848")
     .setDescription(description)
-    .setDMPermission(false)
     .setThumbnail("attachment://catError.gif");
   const attachments = [
     new AttachmentBuilder("src/imgs/catError.gif", "catError.gif"),
@@ -27,7 +26,8 @@ async function sendError(interaction, description) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("leaders")
-    .setDescription("Надсилає рейтинг учасників серверу"),
+    .setDescription("Надсилає рейтинг учасників серверу")
+    .setDMPermission(false),
   async execute(interaction, client) {
     try {
       await interaction.deferReply();

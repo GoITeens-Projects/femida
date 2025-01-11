@@ -42,12 +42,16 @@ module.exports = {
         );
         return;
       }
-      // if (!interaction.member.roles.cache.some((role) => adminRoles.includes(role.id))) {
-      //   interaction.reply(
-      //     "Тільки адміністрація має право використовувати цю команду🙃"
-      //   );
-      //   return;
-      // }
+      if (
+        !interaction.member.roles.cache.some((role) =>
+          adminRoles.includes(role.id)
+        )
+      ) {
+        await interaction.editReply(
+          "Тільки адміністрація має право використовувати цю команду🙃"
+        );
+        return;
+      }
       const data = {
         userId: interaction.options.get("target-user")?.value,
         isSoft: interaction.options.get("is-soft")?.value === "soft",

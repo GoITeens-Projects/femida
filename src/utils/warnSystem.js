@@ -150,7 +150,7 @@ class WarnSystem {
     if (!user.warnings || !user.warnings?.amount) {
       return {
         ok: false,
-        message: "У користувача не було і не має варнів",
+        message: "У користувача не було і немає варнів",
       };
     }
     let warnsAmount = amount;
