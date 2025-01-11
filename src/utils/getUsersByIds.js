@@ -1,8 +1,8 @@
 const Level = require("../models/Level");
 
 module.exports = async (usersIds, client) => {
-  let guildId = await Level.find({});
-  guildId = guildId[0].guildId;
+  let guildId = process.env.GUILD_ID;
+  // guildId = guildId[0].guildId;
   const guild = client.guilds.cache.get(guildId);
 
   try {

@@ -36,7 +36,7 @@ module.exports = async (message) => {
       if (cachedMessages.length >= antiSpam.muteTreshold) {
         await message.guild.members.cache
           .get(userId)
-          .timeout(60000, "Мут за спам");
+          .timeout(1000 * 60 * 60 * 2, "Мут за спам");
         await WarnSystem.giveWarn(
           userId,
           "Спрацювання системи антиспаму",

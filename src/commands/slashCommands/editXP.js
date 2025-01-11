@@ -2,6 +2,9 @@ const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const Level = require("../../models/Level");
 const addPoints = require("../../utils/xp/addPoints");
 const addNewMember = require("../../interactions/addNewMember");
+const {
+  roles: { adminRoles },
+} = require("../../constants/config");
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -27,8 +30,8 @@ module.exports = {
           "Виберіть «додати», щоб додати XP, або «відняти», щоб відняти XP"
         )
         .addChoices(
-          { name: "Add", value: "add" },
-          { name: "Subtract", value: "subtract" }
+          { name: "Додати", value: "add" },
+          { name: "Відняти", value: "subtract" }
         )
         .setRequired(true)
     ),
@@ -39,16 +42,10 @@ module.exports = {
       return;
     }
 
-    const allowedRoles = [
-      "953717386224226385",
-      "953795856308510760",
-      "1192066790717661245",
-    ];
-
     const member = interaction.guild.members.cache.get(interaction.user.id);
 
     const hasAllowedRole = member.roles.cache.some((role) =>
-      allowedRoles.includes(role.id)
+      adminRoles.includes(role.id)
     );
 
     if (!hasAllowedRole) {
@@ -82,12 +79,12 @@ module.exports = {
       .setTimestamp();
     if (interaction.options.get("mode").value === "add") {
       const xpToAdd = interaction.options.get("xp").value;
-      await addPoints(targetUserId, xpToAdd, true);
+      const addPointsResult = await addPoints(targetUserId, xpToAdd, true);
       const userNewXP = await Level.findOne({ userId: targetUserId });
       await interaction.editReply({
         embeds: [
           replyEmbed.setDescription(
-            `\`${xpToAdd}\` XP було додано до ${targetUserObj.user.tag}. Новий XP користувача - \`${userNewXP.xp}\`. `
+            `\`${xpToAdd}\` XP було додано до ${targetUserObj.user.tag}. Новий XP користувача - \`${addPointsResult}\`. `
           ),
         ],
       });

@@ -31,7 +31,7 @@ const sendVerification = require("./interactions/verification/sendVerification.j
 const addStats = require("./interactions/statistics/addStats.js");
 const sendStats = require("./interactions/statistics/sendStats.js");
 const newVoice = require("./interactions/voice/newVoice.js");
-const phishig = require("./interactions/messages/phishing.js");
+const phishing = require("./interactions/messages/phishing.js");
 
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");
@@ -121,7 +121,7 @@ client.on("messageCreate", async (message) => {
   await addStats({ date: new Date(), id: message.author.id, type: "messages" });
   await useAntispam(message);
   await badWords(message);
-  await phishig(message);
+  await phishing(message);
 });
 
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {

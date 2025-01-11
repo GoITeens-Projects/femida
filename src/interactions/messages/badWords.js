@@ -9,12 +9,12 @@ const Level = require("../../models/Level");
 module.exports = async (message) => {
   try {
     if (
-      !message.member.roles.cache.some((role) => adminRoles.includes(role.id))
+      message.member.roles.cache.some((role) => adminRoles.includes(role.id))
     )
       return;
 
     const settings = await SettingsInterface.getSettings();
-    console.log(settings.badwords.words);
+    console.log('bad', settings.badwords.words);
     for (const word of settings.badwords.words) {
       if (!message.content.toLowerCase().includes(word.toLowerCase())) continue;
       const userObj = await Level.findOne({ userId: message.author.id });
