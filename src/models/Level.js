@@ -22,6 +22,10 @@ const levelSchema = new Schema({
     type: Number,
     default: 0,
   },
+  presentXp:{
+    type: Number,
+    default: 0,
+  },
   pinnedLevels: {
     type: Array,
     default: [],
