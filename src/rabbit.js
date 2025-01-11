@@ -1,5 +1,6 @@
 const amqp = require("amqplib");
 const handleSettings = require("./utils/rabbitHandlers/handleSettings");
+const handleVerification = require("./utils/rabbitHandlers/handleVerification");
 
 class Rabbit {
   constructor() {
@@ -18,14 +19,26 @@ class Rabbit {
       console.log(err);
     }
   }
-  async consumeMessages(queueName = "settings") {
-    await this.channel.assertQueue(queueName, { durable: true });
-    this.channel.consume(queueName, async (msg) => {
+  async consumeMessages() {
+    await this.channel.assertQueue("settings", { durable: true });
+    this.channel.consume("settings", async (msg) => {
       try {
         console.log("Rabbit MSG", msg);
         if (msg !== null) {
           const messageContent = JSON.parse(msg.content.toString());
           await handleSettings(messageContent.body, this.channel, msg);
+        }
+      } catch (err) {
+        console.log("Error while receiving Rabbit message: ", err);
+      }
+    });
+    await this.channel.assertQueue("verification", { durable: true });
+    this.channel.consume("verification", async (msg) => {
+      try {
+        console.log("Rabbit MSG", msg);
+        if (msg !== null) {
+          const messageContent = JSON.parse(msg.content.toString());
+          await handleVerification(messageContent.body, this.channel, msg);
         }
       } catch (err) {
         console.log("Error while receiving Rabbit message: ", err);

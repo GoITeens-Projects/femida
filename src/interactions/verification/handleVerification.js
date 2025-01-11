@@ -20,5 +20,23 @@ module.exports = async function handleVerification(msg) {
     username: msg.author.username,
     globalName: msg.author.globalName,
   };
-  useSocket(userObj, msg, waitMsg);
+  try {
+    const resp = await fetch("http://" + process.env.FEMIDA_API + "/verify", {
+      method: "POST",
+      body: JSON.stringify(userObj),
+      headers: {
+        "Content-Type": "application/json; charset=UTF-8",
+        Authorization: `Bearer ${process.env.FEMIDA_API_TOKEN}`,
+      },
+    });
+    const data = await resp.json();
+    waitMsg.edit(data?.message);
+    if (resp.status === 400) {
+      msg.react("🚩");
+    }
+  } catch (err) {
+    console.log(err);
+    msg.react("🚩");
+    waitMsg.edit("Трапилася дивна помилка. Спробуй пізніше");
+  }
 };
