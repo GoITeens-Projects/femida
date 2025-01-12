@@ -40,7 +40,7 @@ class WarnSystem {
           } ${diffAmountSoftWarns ? "і 1 м'який варн" : ""}`,
         });
       const user = await main.client.users.fetch(userId);
-      user.send({ embeds: [embed] });
+      await user.send({ embeds: [embed] });
     } catch (err) {
       console.log("Error while sending warning message", err);
     }
@@ -54,7 +54,7 @@ class WarnSystem {
           `Скільки разів ти вже порушив/ла правила нашого серверу.. \n Я не знаю, що ти зробив/ла, але бажаю \n тобі знайти своїх людей на якомусь іншому сервері, \n бо відтепер вхід на наш тобі заблоковано.`
         );
       const user = await main.client.users.fetch(userId);
-      user.send({ embeds: [embed] });
+      await user.send({ embeds: [embed] });
     } catch (err) {
       console.log("Error while sending ban message", err);
     }
@@ -69,8 +69,12 @@ class WarnSystem {
         `Це ${amount}/${requiredAmount} порушень. Віднині намагайся бути більш чемним(-ою) \n у дотриманні правил нашого серверу`
       )
       .addFields({ name: "Причина:", value: `\`${reason}\`` });
-    const user = await main.client.users.fetch(userId);
-    user.send({ embeds: [embed] });
+    try {
+      const user = await main.client.users.fetch(userId);
+      await user.send({ embeds: [embed] });
+    } catch (err) {
+      console.log(err);
+    }
   }
   async isEnough(warns, id, sendDirect, reason) {
     const requiredWarns = 5;
@@ -116,7 +120,6 @@ class WarnSystem {
   }
   async sendRemoveWarnMsg(userId, amount, newSum) {
     const guild = main.client.guilds.cache.get(guildId);
-    const user = await main.client.users.fetch(userId);
     const embed = new EmbedBuilder()
       .setTitle(
         `Адміни прийняли рішення забрати в тебе ${
@@ -135,7 +138,12 @@ class WarnSystem {
       )
       .setThumbnail(guild.iconURL({ dynamic: true }))
       .setFooter({ text: "Вибач за недорозуміння" });
-    await user.send({ embeds: [embed] });
+    try {
+      const user = await main.client.users.fetch(userId);
+      await user.send({ embeds: [embed] });
+    } catch (err) {
+      console.log(err);
+    }
   }
   async removeWarn(userId, amount) {
     const user = await Level.findOne({ userId });
