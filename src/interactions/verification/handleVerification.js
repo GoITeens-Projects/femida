@@ -18,10 +18,12 @@ module.exports = async function handleVerification(msg) {
     id: msg.author.id,
     avatar: msg.author.displayAvatarURL({ dynamic: true }) || "",
     username: msg.author.username,
-    globalName: msg.author.globalName,
+    username: msg.author.globalName
+      ? msg.author.globalName
+      : msg.author.username,
   };
   try {
-    const resp = await fetch("http://" + process.env.FEMIDA_API + "/verify", {
+    const resp = await fetch("https://" + process.env.FEMIDA_API + "/verify", {
       method: "POST",
       body: JSON.stringify(userObj),
       headers: {
