@@ -24,9 +24,9 @@ module.exports = async (content, channel, msg) => {
       const role = guild.roles.cache.get(studentRole);
       member.user.send("Перевір свої ролі на сервері))");
       member.roles.add(role);
+      channel.ack(msg);
       return;
     }
-    dmChannel.send("Перевір свої ролі))");
     channel.ack(msg);
   } catch (err) {
     console.log("Error while handling verification queue", err);
