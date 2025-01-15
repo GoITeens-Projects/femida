@@ -1,5 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
-const addPoints = "../utils/addPoints";
+const addPoints = require("../utils/xp/addPoints");
 const {
   channels: { boostChannel },
 } = require("../constants/config");
