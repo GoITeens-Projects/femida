@@ -30,7 +30,8 @@ async function createRankCard(interaction, userObjDB) {
   await interaction.guild.members
     .fetch(interaction.user.id)
     .then((userGuild) => (userGuildObj = userGuild));
-  Font.loadDefault();
+  // Font.loadDefault();
+  await Font.fromFile("./src/fonts/LXGWWenKaiMonoTC-Bold.ttf");
   const curLevel = userObjDB.level;
   let prevLevel = 0;
   let prevNeededXp = 0;
