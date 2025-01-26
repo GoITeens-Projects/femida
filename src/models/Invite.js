@@ -6,20 +6,22 @@ const InviteSchema = new mongoose.Schema({
     required: true,
     unique: false,
   },
-  newbieId: {
-    type: String,
-    required: true,
-    unique: false,
-  },
-  isNewbieJoined: {
-    type: Boolean,
+  uses: {
+    type: Number,
     required: true,
   },
-  
   inviteCode: {
     type: String,
     required: true,
     unique: true,
+  },
+  savedDate: {
+    type: Date,
+    required: true,
+  },
+  usedDate: {
+    type: Date,
+    required: true,
   },
   expiresAfter: {
     type: Date,
