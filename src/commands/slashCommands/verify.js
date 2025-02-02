@@ -12,12 +12,15 @@ module.exports = {
       ephemeral: true,
     });
     try {
-      await sendVerification(
+      const status = await sendVerification(
         interaction.user,
         false,
         interaction.member.guild,
         true
       );
+      if (!status) {
+        throw Error("Не вдалося відправити особисте повідомлення");
+      }
       await interaction.editReply({
         content: "Подивись у особисті повідомлення😉",
         ephemeral: true,
