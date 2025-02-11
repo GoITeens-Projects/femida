@@ -1,6 +1,18 @@
 const mongoose = require("mongoose");
 
 const SettingSchema = new mongoose.Schema({
+  xps: {
+    message: { type: Number, default: 4 },
+    boost: { type: Number, default: 500 },
+    voice: { type: Number, default: 20 },
+    voiceWithAdmin: { type: Number, default: 25 },
+    stage: {
+      type: Number,
+      default: 6,
+    },
+    invite: { type: Number, default: 300 },
+    baseXpLimit: { type: Number, default: 150 },
+  },
   badwords: {
     enabled: { type: Boolean, default: true },
     words: [String],
@@ -25,6 +37,8 @@ const SettingSchema = new mongoose.Schema({
         },
       },
     },
+    targetChannels: [String],
+    targetRoles: [String],
   },
   spam: {
     enabled: { type: Boolean, default: true },
@@ -50,6 +64,8 @@ const SettingSchema = new mongoose.Schema({
         },
       },
     },
+    targetChannels: [String],
+    targetRoles: [String],
   },
   emojisSpam: {
     enabled: { type: Boolean, default: true },
@@ -73,6 +89,8 @@ const SettingSchema = new mongoose.Schema({
         },
       },
     },
+    targetChannels: [String],
+    targetRoles: [String],
   },
   scamLinks: {
     enabled: { type: Boolean, default: true },
@@ -98,6 +116,8 @@ const SettingSchema = new mongoose.Schema({
         },
       },
     },
+    targetChannels: [String],
+    targetRoles: [String],
   },
   invitations: {
     enabled: { type: Boolean, default: true },
@@ -122,7 +142,36 @@ const SettingSchema = new mongoose.Schema({
         },
       },
     },
+    targetChannels: [String],
+    targetRoles: [String],
   },
+  funCommands: {
+    winkLvl: { type: Number, default: 15 },
+    cryLvl: { type: Number, default: 15 },
+    patLvl: { type: Number, default: 15 },
+    nopeLvl: { type: Number, default: 10 },
+    waveLvl: { type: Number, default: 10 },
+    highfiveLvl: { type: Number, default: 5 },
+    hugLvl: { type: Number, default: 0 },
+    pokeLvl: { type: Number, default: 0 },
+    slapLvl: { type: Number, default: 0 },
+  },
+  events: [
+    {
+      activities: {
+        messages: { type: Boolean, default: true },
+        voice: { type: Boolean, default: true },
+        stage: { type: Boolean, default: true },
+        boosts: { type: Boolean, default: true },
+      },
+      k: { type: Number, default: 1 },
+      kLimit: { type: Number, default: 1 },
+      startDate: { type: Date, required: true, unique: false },
+      endDate: { type: Date, required: true, unique: false },
+      targetChannels: [String],
+      targetRoles: [String],
+    },
+  ],
 });
 module.exports =
   mongoose.model.Settings || mongoose.model("Settings", SettingSchema);
