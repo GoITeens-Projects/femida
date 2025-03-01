@@ -1,6 +1,7 @@
 const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 const Level = require("../models/Level");
 const getColors = require("get-image-colors");
+const SettingsInterface = require("../utils/settings");
 const gifs = require("discord-actions");
 const ainasepics = require("ainasepics");
 const NodeCache = require("node-cache");
@@ -30,19 +31,24 @@ module.exports = async function gifCmds(interaction, actionText) {
     });
   }
   async function checkLevel(userId, command) {
+    const { funCommands } = await SettingsInterface.getSettings();
     const commandsLevels = {
-      hug: 0,
-      slap: 0,
-      poke: 0,
-      highfive: 0, //? 5
+      // hug: 0,
+      // slap: 0,
+      // poke: 0,
+      // highfive: 0, //? 5
       // cuddle: 10,
-      nope: 0, //?10
-      wave: 0, //?10
-      pat: 0, //?15
-      wink: 0, //?15
-      cry: 0, //?15
+      // nope: 0, //?10
+      // wave: 0, //?10
+      // pat: 0, //?15
+      // wink: 0, //?15
+      // cry: 0, //?15
       // panic: 15,
     };
+
+    Object.keys(funCommands).forEach((key) => {
+      commandsLevels[key.replace("Lvl", "").toLowerCase()] = funCommands[key];
+    });
     const minLevel = commandsLevels[command];
     const userObj = await Level.findOne({ userId });
     if (userObj.level >= minLevel) {
