@@ -11,6 +11,8 @@ const SettingSchema = new mongoose.Schema({
       default: 6,
     },
     invite: { type: Number, default: 300 },
+    studentMultiplier: { type: Number, default: 1.25 },
+    graduateMultiplier: { type: Number, default: 1.5 },
     baseXpLimit: { type: Number, default: 150 },
   },
   badwords: {
@@ -158,6 +160,7 @@ const SettingSchema = new mongoose.Schema({
   },
   events: [
     {
+      title: { type: String, default: "" },
       activities: {
         messages: { type: Boolean, default: true },
         voice: { type: Boolean, default: true },

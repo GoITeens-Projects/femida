@@ -25,7 +25,7 @@ const InviteSchema = new mongoose.Schema({
   },
   expiresAfter: {
     type: Date,
-    reuired: true,
+    required: true,
     unique: false,
   },
 });
