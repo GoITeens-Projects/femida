@@ -160,6 +160,7 @@ const SettingSchema = new mongoose.Schema({
   },
   events: [
     {
+      title: { type: String, default: "" },
       activities: {
         messages: { type: Boolean, default: true },
         voice: { type: Boolean, default: true },
