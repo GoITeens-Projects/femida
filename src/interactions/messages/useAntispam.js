@@ -9,10 +9,20 @@ const myCache = new NodeCache({
     stdTTL: 30, // seconds
 });
 
-module.exports = async(message) => {
+async function getMuteThreshold() {
+    try {
+        const settings = await SettingsInterface.getSettings();
+        console.log("Отримані налаштування антиспаму:", settings?.spam);
+        return settings?.spam?.messagesLimit || antiSpam.muteTreshold; // Якщо нема в БД — дефолтне
+    } catch (error) {
+        console.error("❌ Помилка отримання muteTreshold:", error);
+        return antiSpam.muteTreshold; // Дефолтне значення у разі помилки
+    }
+}
+
+module.exports = async (message) => {
     const userId = message.author.id;
     const content = message.content;
-
 
     try {
         const member = message.guild.members.cache.get(userId);
@@ -23,7 +33,6 @@ module.exports = async(message) => {
         if (hasAdminRoles) return;
 
         const cacheKey = `${userId}_${content}`;
-
         const cachedMessages = myCache.get(cacheKey) || [];
 
         cachedMessages.push({
@@ -34,8 +43,11 @@ module.exports = async(message) => {
         myCache.set(cacheKey, cachedMessages);
         console.log("Cached messages length:", cachedMessages.length);
 
+        const muteTreshold = await getMuteThreshold(); // Динамічне значення
+
         if (cachedMessages.length >= antiSpam.warnThreshold) {
-            if (cachedMessages.length >= antiSpam.muteTreshold) {
+            if (cachedMessages.length >= muteTreshold) {
+                console.log(`❗ Мутимо користувача ${userId} за спам.`);
                 await message.guild.members.cache
                     .get(userId)
                     .timeout(1000 * 60 * 1, "Мут за спам");
