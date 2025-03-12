@@ -12,7 +12,7 @@ const myCache = new NodeCache({
 async function getMuteThreshold() {
     try {
         const settings = await SettingsInterface.getSettings();
-        console.log("Отримані налаштування антиспаму:", settings?.spam);
+        console.log("Отримані налаштування антиспаму:", settings?.settings?.spam);
         return settings?.spam?.messagesLimit || antiSpam.muteTreshold; // Якщо нема в БД — дефолтне
     } catch (error) {
         console.error("❌ Помилка отримання muteTreshold:", error);
