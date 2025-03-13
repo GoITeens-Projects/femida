@@ -158,6 +158,23 @@ const SettingSchema = new mongoose.Schema({
     pokeLvl: { type: Number, default: 0 },
     slapLvl: { type: Number, default: 0 },
   },
+  warns: {
+    onMute: { type: String, default: "remove-all-warns" },
+    //? remove-all-warns
+    //? remove-all-exept-one
+    //? save-all
+    actions: [
+      {
+        mute: {
+          enabled: { type: Boolean, default: false },
+          muteTimeMs: { type: Number },
+        },
+        kick: { type: Boolean, default: false },
+        ban: { type: Boolean, default: false },
+        warnsAmount: { type: Number },
+      },
+    ],
+  },
   events: [
     {
       title: { type: String, default: "" },
