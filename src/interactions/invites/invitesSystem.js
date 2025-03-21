@@ -8,78 +8,172 @@ const addPoints = require("../../utils/xp/addPoints");
 const {
   xps: { invite },
 } = require("../../constants/config");
+const { Collection } = require("discord.js");
+const invites = new Collection();
 
 class InvitesSystem {
-  async addInvite() {}
-  async deleteInvite(invite) {
-    await Invite.deleteOne({ inviteCode: invite.code });
+  constructor() {
+    this.claimInviteXp = this.claimInviteXp.bind(this);
   }
-  async saveInvite(invite) {
-    console.log(invite);
-    const inviteObj = new Invite({
-      inviteCode: invite.code,
-      inviterId: invite.inviterId,
-      uses: invite.uses,
-      savedDate: new Date(),
-      usedDate: new Date(),
-      expiresAfter: new Date(invite._expiresTimestamp),
+  initializeInvites() {
+    main.client.guilds.cache.forEach(async (guild) => {
+      const firstInvites = await guild.invites.fetch();
+      invites.set(
+        guild.id,
+        new Collection(firstInvites.map((invite) => [invite.code, invite.uses]))
+      );
     });
-    await inviteObj.save();
   }
-  async claimInviteXp(inviteCode, uses) {
-    const updatedInvite = await Invite.findOneAndUpdate(
-      { inviteCode },
-      { uses },
-      { new: true }
-    );
-    await addPoints(updatedInvite.inviterId, invite, true);
-  }
-  async dailyCheckInvites() {
-    //? getting all discord invites and iteratin em
-
-    const invites = await main.client.guilds.cache.get(guildId).invites.fetch();
-    console.log(invites);
-    invites.forEach(async (invite) => {
-      //? checkin if inviter is admin
-      //? if so, just skipping iteration
-      const inviter = await main.client.guilds.cache
+  async addInvite(invite) {
+    invites.get(invite.guild.id).set(invite.code, invite.uses);
+    try {
+      //? checking if invitor is admin
+      const invitorMember = await main.client.guilds.cache
         .get(guildId)
         .members.fetch(invite.inviterId);
-      if (inviter.roles.cache.some((role) => adminRoles.includes(role.id)))
+      if (
+        invitorMember.roles.cache.some((role) => adminRoles.includes(role.id))
+      )
         return;
 
-      //? checkin if invite saved in DB
-      //todo: if saved, we have to check has the invite been used
-      //todo: if not saved, we have to define was it already claimed or
-      //todo: it is absolately new invite
-
-      const savedInvite = await Invite.findOne({ inviteCode: invite.code });
-      if (savedInvite) {
-        const monthDate = new Date();
-        monthDate.setMonth(new Date().getMonth() + 1);
-        console.log(new Date(), monthDate);
-        if (invite.uses === 0 || invite.uses < savedInvite.uses) return;
-        //? checking if the month already passed
-        if (
-          new Date().getTime() - new Date(savedInvite.savedDate).getTime() >=
-          monthDate.getTime()
-        ) {
-          console.log("MONTH PASSED");
-          await this.claimInviteXp(savedInvite.inviteCode, invite.uses);
+      //? deleting automatically after 45 days
+      const endDate = new Date(Date.now() + 1000 * 60 * 60 * 24 * 45);
+      console.log("end", endDate);
+      const newInvite = new Invite({
+        inviterId: invite.inviterId,
+        guests: null,
+        uses: invite.uses,
+        inviteCode: invite.code,
+        savedDate: new Date(),
+        expiresAfter: endDate,
+      });
+      await newInvite.save();
+    } catch (err) {
+      console.log("Invites error - ", err);
+    }
+  }
+  async deleteInvite(invite) {
+    try {
+      invites.get(invite.guild.id).delete(invite.code);
+      await Invite.deleteOne({ inviteCode: invite.code });
+    } catch (err) {
+      console.log("Error while deleting invite - ", err);
+    }
+  }
+  async getInviteCodeByUser(member) {
+    try {
+      const newInvites = await member.guild.invites.fetch();
+      const oldInvites = invites.get(member.guild.id);
+      const updatedInvite = newInvites.find(
+        (i) => i.uses > oldInvites.get(i.code)
+      );
+      if (!updatedInvite) return;
+      const inviter = member.guild.members.cache.get(updatedInvite.inviter.id);
+      if (inviter.roles.cache.some((role) => adminRoles.includes(role.id)))
+        return;
+      const prevInvite = await Invite.findOne({
+        inviteCode: updatedInvite.code,
+      });
+      await Invite.findOneAndUpdate(
+        { inviteCode: updatedInvite.code },
+        {
+          guests:
+            prevInvite.guests === null
+              ? [{ id: member.id, usedDate: new Date() }]
+              : [...prevInvite.guests, { id: member.id, usedDate: new Date() }],
+          uses: updatedInvite.uses,
         }
-        //? so here we have to add XP after 1 month
-        // await this.claimInviteXp(savedInvite.inviteCode, invite.uses);
-      } else {
-        //? there aren't such invite in DB
-        if (invite.uses > 0) {
-          //? saving and giving XP
-          await this.saveInvite(invite);
-          // await this.claimInviteXp(invite.code, invite.uses);
-        } else {
-          //? just creating invite document
-          await this.saveInvite(invite);
-        }
+      );
+    } catch (err) {
+      console.log("Error in invites - ", err);
+    }
+  }
+  calculateInviteXp(uses) {
+    let totalXp = invite;
+    if (Number(uses) > 1) {
+      for (let i = 0; i <= uses; i++) {
+        totalXp += 100;
       }
+    } else {
+      return totalXp;
+    }
+  }
+  async claimInviteXp(inviteCode, validUses) {
+    try {
+      if (validUses === 0) return;
+      const inviteData = await Invite.findOne({ code: inviteCode });
+      await addPoints(inviteData.inviterId, invite, true);
+      await Invite.deleteOne({ code: inviteCode });
+    } catch (err) {
+      console.log("Error while claiming invite - ", err);
+    }
+  }
+  async dailyCheckInvites() {
+    const allSavedInvites = await Invite.find({});
+    const guild = main.client.guilds.cache.get(guildId);
+    allSavedInvites.forEach(async (invite) => {
+      if (!invite.guests) return;
+      let leftGuests = [];
+      const validUsesAmount = await invite.guests.reduce(
+        async (total, newbieObj) => {
+          //? checking date valid
+          // const diffMs = Date.now() - new Date(newbieObj.usedDate).getTime();
+          // const targetDate = new Date(newbieObj.usedDate);
+          // targetDate.setUTCMonth(targetDate.getUTCMonth() + 1);
+          // const targetDateDiff =
+          //   targetDate.getTime() - new Date(newbieObj.usedDate).getTime();
+          // if (diffMs < targetDateDiff) return total;
+          //? checking if newbie is on server
+          try {
+            const newbie = await guild?.members.fetch(newbieObj.id);
+            if (newbie) {
+              return total + 1;
+            } else {
+              //? newbie has left our server :(
+              if (invite.guests.length === 1) {
+                await Invite.deleteOne({ inviteCode: invite.code });
+              } else {
+                leftGuests.push(newbieObj);
+              }
+              return total;
+            }
+          } catch (err) {
+            if (invite.guests.length === 1) {
+              await Invite.deleteOne({ inviteCode: invite.code });
+            } else {
+              leftGuests.push(newbieObj);
+            }
+            return total;
+          }
+        },
+        0
+      );
+      console.log("valid uses - ", validUsesAmount);
+      if (leftGuests.length !== 0) {
+        const leftGuestsIds = leftGuests.map((leftGuest) => leftGuest.id);
+        await invite.update({
+          guests: invite.guests.filter((g) => !leftGuestsIds.includes(g.id)),
+        });
+      }
+      if (validUsesAmount === 0) return;
+      //? checking dates and terms
+      // if (!invite.usedDates) return;
+      // const diffMs = Date.now - new Date(invite.usedDate).getUTCMilliseconds();
+      // const targetDate = new Date(invite.usedDate);
+      // targetDate.setUTCMonth(targetDate.getUTCMonth() + 1);
+      // const targetDateDiff =
+      //   targetDate.getUTCMilliseconds() -
+      //   new Date(invite.usedDate).getUTCMilliseconds();
+      // if (diffMs < targetDateDiff) return;
+      // //? checking if new user is still on server
+      // const newbie = await guild?.members.fetch(invite.guestId);
+      // if (!newbie) {
+      //   //* invite is alright but new user has left the server
+      //   await Invite.deleteOne({ code: invite.inviteCode });
+      //   return;
+      // }
+      //? claiming reward and deleting invite from DB
+      this.claimInviteXp(invite.code, validUsesAmount);
     });
   }
 }

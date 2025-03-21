@@ -17,6 +17,7 @@ const checkRoleInVc = require("./interactions/voice/checkRoleInVc.js");
 const database = require("./database.js");
 const Rabbit = require("./rabbit.js");
 const fetchInvites = require("./interactions/invites/fetchInvites.js");
+const InvitesSystem = require("./interactions/invites/invitesSystem.js");
 const getInteractionCommands = require("./interactions/getInteractionCommands.js");
 const limitPoints = require("./interactions/limitPoints.js");
 const sendRatingEveryMonth = require("./interactions/sendRatingEveryMonth.js");
@@ -32,6 +33,7 @@ const addStats = require("./interactions/statistics/addStats.js");
 const sendStats = require("./interactions/statistics/sendStats.js");
 const newVoice = require("./interactions/voice/newVoice.js");
 const phishing = require("./interactions/messages/phishing.js");
+const checkInvitesEveryDay = require("./interactions/invites/checkInvitesEveryDay.js");
 
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");
@@ -81,12 +83,13 @@ config();
 
 client.on("ready", async (op) => {
   database(client);
-  fetchInvites(op, client);
   Rabbit.connect();
+  InvitesSystem.initializeInvites();
 });
 
 limitPoints();
 sendRatingEveryMonth(client);
+checkInvitesEveryDay();
 sendStats(client);
 startClearDatabaseInterval();
 antiSpam.messageCount = new Map();
@@ -95,8 +98,17 @@ const TOKEN = process.env.TOKEN;
 
 // взаємодія з юзером
 
+client.on(Events.InviteCreate, async (invite) => {
+  InvitesSystem.addInvite(invite);
+});
+
+client.on(Events.InviteDelete, async (invite) => {
+  InvitesSystem.deleteInvite(invite);
+});
+
 client.on("guildMemberAdd", async (person) => {
-  updateInvites(person, client);
+  // updateInvites(person, client);
+  await InvitesSystem.getInviteCodeByUser(person);
   sendVerification(person, client, client.guilds.cache.get(guildId), false);
   await addStats({ date: new Date(), id: person.id, type: "newbies" });
 });

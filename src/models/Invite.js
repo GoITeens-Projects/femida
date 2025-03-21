@@ -6,6 +6,12 @@ const InviteSchema = new mongoose.Schema({
     required: true,
     unique: false,
   },
+  guests: [
+    {
+      id: { type: String },
+      usedDate: { type: Date },
+    },
+  ],
   uses: {
     type: Number,
     required: true,
@@ -16,10 +22,6 @@ const InviteSchema = new mongoose.Schema({
     unique: true,
   },
   savedDate: {
-    type: Date,
-    required: true,
-  },
-  usedDate: {
     type: Date,
     required: true,
   },
