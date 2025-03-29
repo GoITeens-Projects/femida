@@ -10,10 +10,10 @@ const myCache = new NodeCache({
     stdTTL: 30, // seconds
 });
 
+// Отримуємо ліміт повідомлень для спрацьовування антиспаму
 async function getMuteThreshold() {
     try {
         const settings = await SettingsInterface.getSettings();
-        console.log("Отримані налаштування антиспаму:", settings?.spam);
         return settings?.spam?.messagesLimit || antiSpam.muteTreshold;
     } catch (error) {
         console.error("❌ Помилка отримання muteTreshold:", error);
@@ -21,52 +21,84 @@ async function getMuteThreshold() {
     }
 }
 
+// Чи потрібно повідомляти користувача про покарання
 async function shouldNotifyUser() {
     try {
         const settings = await SettingsInterface.getSettings();
-        return settings?.spam?.notifyUser?.enabled ?? false; // Якщо налаштування немає - false
+        return settings?.spam?.actions?.notifyUser?.enabled ?? false;
     } catch (error) {
         console.error("❌ Помилка отримання notifyUser.enabled:", error);
         return false;
     }
 }
+
+// Чи ввімкнена система антиспаму
 async function isAntiSpamEnabled() {
     try {
         const settings = await SettingsInterface.getSettings();
-        return settings?.spam?.enabled ?? true; // Якщо налаштування немає, за замовчуванням true
+        return settings?.spam?.enabled ?? true;
     } catch (error) {
         console.error("❌ Помилка отримання spam.enabled:", error);
         return true;
     }
-    
 }
+
+// Отримуємо таймаут перед видаленням повідомлення (якщо потрібно)
 async function getDeleteTimeout() {
     try {
         const settings = await SettingsInterface.getSettings();
-        return settings?.spam?.notifyUser?.deleteTimeoutMs ?? 5000; // Якщо немає в БД, дефолт - 5000 мс
+        return settings?.spam?.actions?.notifyUser?.deleteTimeoutMs ?? 5000;
     } catch (error) {
         console.error("❌ Помилка отримання deleteTimeoutMs:", error);
         return 5000;
     }
 }
+
+// Чи потрібно видаляти повідомлення спамера
 async function shouldDeleteMessages() {
     try {
         const settings = await SettingsInterface.getSettings();
-        return settings?.spam?.action?.deleteMessages ?? true; // Якщо немає в БД, за замовчуванням true
+        return settings?.spam?.actions?.deleteMsg ?? true;
     } catch (error) {
         console.error("❌ Помилка отримання action.deleteMessages:", error);
         return true;
     }
 }
+
+// Отримуємо час мута (якщо потрібно)
 async function getMuteTime() {
     try {
         const settings = await SettingsInterface.getSettings();
-        return settings?.spam?.action?.mute?.muteTimeMs ?? 60000; // 1 хвилина за замовчуванням
+        return settings?.spam?.actions?.mute?.muteTimeMs ?? 60000;
     } catch (error) {
         console.error("❌ Помилка отримання muteTimeMs:", error);
         return 60000;
     }
 }
+
+// Чи потрібно мутити користувачів за спам (за замовчуванням true)
+async function isMuteEnabled() {
+    try {
+        const settings = await SettingsInterface.getSettings();
+        return settings?.spam?.actions?.mute?.enabled ?? true; 
+    } catch (error) {
+        console.error("❌ Помилка отримання mute.enabled:", error);
+        return true; // Якщо сталася помилка, теж повертаємо true
+    }
+}
+
+// Чи потрібно видавати попередження (варн) за спам (за замовчуванням true)
+async function isGiveWarnEnabled() {
+    try {
+        const settings = await SettingsInterface.getSettings();
+        return settings?.spam?.actions?.giveWarn ?? true; 
+    } catch (error) {
+        console.error("❌ Помилка отримання giveWarn:", error);
+        return true; // Якщо сталася помилка, теж повертаємо true
+    }
+}
+
+// Відправлення повідомлення користувачеві в особисті повідомлення
 async function sendDM(user, text) {
     try {
         await user.send(text);
@@ -76,18 +108,17 @@ async function sendDM(user, text) {
 }
 
 module.exports = async (message) => {
-     if (!(await isAntiSpamEnabled())) return; // Якщо антиспам вимкнено - виходимо
+    if (!(await isAntiSpamEnabled())) return; // Якщо антиспам вимкнено - вихід
+
     const userId = message.author.id;
     const content = message.content;
 
     try {
         const member = message.guild.members.cache.get(userId);
-        const hasAdminRoles = adminRoles.some((role) =>
-            member.roles.cache.has(role)
-        );
+        const hasAdminRoles = adminRoles.some((role) => member.roles.cache.has(role));
+        if (hasAdminRoles) return; // Якщо користувач — адмін, ігноруємо
 
-        if (hasAdminRoles) return;
-
+        // Ключ для кешу, щоб відстежувати однакові повідомлення
         const cacheKey = `${userId}_${content}`;
         const cachedMessages = myCache.get(cacheKey) || [];
 
@@ -99,56 +130,63 @@ module.exports = async (message) => {
         myCache.set(cacheKey, cachedMessages);
         console.log("Cached messages length:", cachedMessages.length);
 
-        const muteTreshold = await getMuteThreshold();
-        const notifyUser = await shouldNotifyUser(); // Отримуємо налаштування
-        const deleteTimeout = await getDeleteTimeout(); // Отримуємо затримку перед видаленням
-         const deleteMessages = await shouldDeleteMessages();
-        const muteTime = await getMuteTime(); // Отримуємо час мута
-        if (cachedMessages.length >= antiSpam.warnThreshold) {
-            if (cachedMessages.length >= muteTreshold) {
+        // Отримуємо всі необхідні налаштування
+        const muteThreshold = await getMuteThreshold();
+        const notifyUser = await shouldNotifyUser();
+        const deleteTimeout = await getDeleteTimeout();
+        const deleteMessages = await shouldDeleteMessages();
+        const muteTime = await getMuteTime();
+        const muteEnabled = await isMuteEnabled();
+        const giveWarnEnabled = await isGiveWarnEnabled();
+
+        // Якщо користувач перевищив допустиму кількість повідомлень
+        if (cachedMessages.length >= muteThreshold) {
+            if (!muteEnabled && !giveWarnEnabled) {
+                console.log(`⚠️ Спам виявлено, але ні мут, ні варн не ввімкнено.`);
+                await message.channel.send(`<@${userId}> ${antiSpam.warnMessage}`);
+                return;
+            }
+
+            // Якщо мут увімкнено — видаємо мут
+            if (muteEnabled) {
                 console.log(`❗ Мутимо користувача ${userId} за спам.`);
-                await message.guild.members.cache
-                    .get(userId)
-                     .timeout(muteTime, "Мут за спам");
-                await WarnSystem.giveWarn(
-                    userId,
-                    "Спрацювання системи антиспаму",
-                    true
-                );
+                await message.guild.members.cache.get(userId).timeout(muteTime, "Мут за спам");
+                await WarnSystem.giveWarn(userId, "Спрацювання системи антиспаму", true);
                 await message.channel.send(`<@${userId}> ${antiSpam.muteMessage}`);
-                
+
                 if (notifyUser) {
                     await sendDM(member.user, `❗ Ви отримали мут за спам у сервері **${message.guild.name}**.\n\nПричина: ${antiSpam.muteMessage}`);
                 }
-            } else {
+            }
+
+            // Якщо варни увімкнено — видаємо варн
+            if (giveWarnEnabled) {
+                console.log(`⚠️ Видаємо попередження користувачу ${userId} за спам.`);
                 await message.channel.send(`<@${userId}> ${antiSpam.warnMessage}`);
-                await WarnSystem.giveSoftWarn(userId, "Мут за спам", false);
+                await WarnSystem.giveSoftWarn(userId, "Попередження за спам", false);
 
                 if (notifyUser) {
                     await sendDM(member.user, `⚠️ Попередження! Ви підозрюєтесь у спамі на сервері **${message.guild.name}**.\n\nПричина: ${antiSpam.warnMessage}`);
                 }
-                if (deleteMessages) {
-                    for (const cachedMsg of cachedMessages) {
-                        try {
-                            const channel = message.guild.channels.cache.get(
-                                cachedMsg.channelId
-                            );
-                            if (!channel) continue;
+            }
 
-                            const spamMessage = await channel.messages
-                                .fetch(cachedMsg.messageId)
-                                .catch(() => null);
-                            if (!spamMessage) continue;
+            // Якщо потрібно видаляти повідомлення — видаляємо
+            if (deleteMessages) {
+                for (const cachedMsg of cachedMessages) {
+                    try {
+                        const channel = message.guild.channels.cache.get(cachedMsg.channelId);
+                        if (!channel) continue;
 
-                            setTimeout(async () => {
-                                await spamMessage.delete();
-                            }, deleteTimeout); // Використовуємо затримку з БД або 5 сек за замовчуванням
-                        } catch (error) {
-                            console.error("Error deleting message:", error);
-                        }
+                        const spamMessage = await channel.messages.fetch(cachedMsg.messageId).catch(() => null);
+                        if (!spamMessage) continue;
+
+                        setTimeout(async () => {
+                            await spamMessage.delete();
+                        }, deleteTimeout);
+                    } catch (error) {
+                        console.error("Error deleting message:", error);
                     }
                 }
-                return;
             }
         }
     } catch (err) {
