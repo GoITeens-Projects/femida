@@ -71,6 +71,7 @@ const SettingSchema = new mongoose.Schema({
   },
   emojisSpam: {
     enabled: { type: Boolean, default: true },
+    maxEmojis: { type: Number, default: 6 },
     actions: {
       giveWarn: { type: Boolean, default: true },
       mute: {

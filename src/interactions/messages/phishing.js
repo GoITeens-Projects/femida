@@ -1,3 +1,4 @@
+const SettingsInterface = require("../../utils/settings");
 const urlRegex = /(?:https?:\/\/[^\s]+|\[[^\]]+\]\((https?:\/\/[^\s]+)\))/g;
 const phishingRegex =
   /^(https?:\/\/)?(www\.)?((\d{1,3}\.){3}\d{1,3}|[a-zA-Z0-9-]+\.(?!com|net|org|edu|gov|io|cz|sk)[a-zA-Z]+)(\/|$)/;
@@ -22,6 +23,10 @@ const phishUrls = [
 ];
 
 module.exports = async (message) => {
+  const settings = await SettingsInterface.getSettings();
+  // console.log(settings.scamLinks);
+  if (!settings.scamLinks.enabled) return;
+
   const member = message.guild.members.cache.get(message.author.id);
   if (adminRoles.some((role) => member.roles.cache.has(role))) return;
 
@@ -32,17 +37,44 @@ module.exports = async (message) => {
   if (matches.length > 0) {
     for (const match of matches) {
       const url = match[1] || match[0];
-
+      if (settings.scamLinks.targerLinks.some((scamLink) => scamLink === url)) {
+        if (settings.scamLinks.mute.enabled) {
+          await message.guild.members.cache
+            .get(message.author.id)
+            .timeout(
+              settings.scamLink.mute.muteTimeMs,
+              "Мут за фішинг(скорочувач посилань)"
+            );
+        }
+        if (settings.scamLinks.deleteMsg) {
+          await message.delete();
+        }
+        if (settings.scamLinks.notifyUser.enabled) {
+          await message.channel.send(
+            `<@${message.author.id}>, не відправляй фішинг посилань!`
+          );
+        }
+        return;
+      }
       console.log(`Знайдено посилання: ${url}`);
 
       if (phishUrls.some((url) => url.includes(url))) {
-        await message.guild.members.cache
-          .get(message.author.id)
-          .timeout(
-            1000 * 60 * 60 * 24 * 1,
-            "Мут за фішинг(скорочувач посилань)"
+        if (settings.scamLinks.mute.enabled) {
+          await message.guild.members.cache
+            .get(message.author.id)
+            .timeout(
+              settings.scamLink.mute.muteTimeMs,
+              "Мут за фішинг(скорочувач посилань)"
+            );
+        }
+        if (settings.scamLinks.deleteMsg) {
+          await message.delete();
+        }
+        if (settings.scamLinks.notifyUser.enabled) {
+          await message.channel.send(
+            `<@${message.author.id}>, не відправляй фішинг посилань!`
           );
-        await message.delete();
+        }
         return;
       }
 
@@ -51,10 +83,22 @@ module.exports = async (message) => {
       }
 
       if (phishingRegex.test(url) || redirectionRegex.test(url)) {
-        await message.guild.members.cache
-          .get(message.author.id)
-          .timeout(1000 * 60 * 60 * 24 * 7, "Мут за фішинг");
-        await message.delete();
+        if (settings.scamLinks.mute.enabled) {
+          await message.guild.members.cache
+            .get(message.author.id)
+            .timeout(
+              settings.scamLink.mute.muteTimeMs,
+              "Мут за фішинг(скорочувач посилань)"
+            );
+        }
+        if (settings.scamLinks.deleteMsg) {
+          await message.delete();
+        }
+        if (settings.scamLinks.notifyUser.enabled) {
+          await message.channel.send(
+            `<@${message.author.id}>, не відправляй фішинг посилань!`
+          );
+        }
       } else {
         console.log("Itʼs secure link");
       }
