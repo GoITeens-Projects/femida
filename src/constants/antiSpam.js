@@ -1,4 +1,4 @@
-// const SettingsInterface = require("../../utils/settings");
+    // const SettingsInterface = require("../../utils/settings");
 
 // async function getSpamSettings() {
 //     const settings = await SettingsInterface.getSettings();
