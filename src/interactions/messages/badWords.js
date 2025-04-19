@@ -6,6 +6,35 @@ const { giveWarn, giveSoftWarn } = require("../../utils/warnSystem");
 const SettingsInterface = require("../../utils/settings");
 const Level = require("../../models/Level");
 const addNewMember = require("../addNewMember");
+const decodeMessage = require("../../utils/decodeMessage");
+const main = require("../../index");
+const { guildId } = require("../../constants/config");
+const Level = require("../../models/Level");
+
+async function notifyUser(settings, user, message) {
+  const obj = {};
+  const { xp, level } = await Level.findOne({ userId: user.id });
+  const { messageFn } = settings.badwords.actions.notifyUser;
+  if (messageFn.includes("{{username}}")) {
+    obj.username = `<@${user.id}>`;
+  }
+  if (messageFn.includes("{{guildName}}")) {
+    obj.guildName = main.client.guilds.cache.get(guildId).name;
+  }
+  if (messageFn.includes("{{channelName}}")) {
+    obj.channelName = message.channel.name;
+  }
+  if (messageFn.includes("{{userXp}}")) {
+    obj.userXp = xp;
+  }
+  if (messageFn.includes("{{userLevel}}")) {
+    obj.userXp = level;
+  }
+  const decodedMsgFn = decodeMessage(
+    settings.badwords.actions.notifyUser.messageFn
+  );
+  message.reply(decodedMsgFn(obj));
+}
 
 async function firstWarn(message, settings) {
   if (settings.badwords.actions.giveWarn)
@@ -13,10 +42,13 @@ async function firstWarn(message, settings) {
       message.author.id,
       "Використання нецензурної лексики (вперше)"
     );
-  if (settings.badwords.actions.notifyUser.enabled)
-    message.channel.send(
-      `<@${message.author.id}> не використовуй нецензурну лексику! \n Так як у тебе це вперше, ти отримав(-ла) "м'яке" попередження`
-    );
+  if (settings.badwords.actions.notifyUser.enabled) {
+    notifyUser(settings, message.author, message);
+    // message.channel.send(
+    //   `<@${message.author.id}> не використовуй нецензурну лексику! \n Так як у тебе це вперше, ти отримав(-ла) "м'яке" попередження`
+    // );
+  }
+  
   if (settings.badwords.actions.deleteMsg) message.delete();
 }
 
@@ -56,7 +88,7 @@ module.exports = async (message) => {
         addNewMember(null, message);
         userObj = await Level.findOne({ userId: message.author.id });
       }
-      if (!settings.badwords.actions.giveWarn) break;
+      if (!settings.badwords.actions.giveWarn) continue;
       if (userObj.warnings?.amount > 0) {
         // await giveWarn(
         //   message.author.id,
@@ -70,10 +102,10 @@ module.exports = async (message) => {
         //   settings.mute.muteTimeMs ? settings.mute.muteTimeMs : 1000 * 60 * 30,
         //   "Не перше використання нецензурної лайки"
         // );
-        await anotherWarn(message);
+        await anotherWarn(message, settings);
         break;
       } else {
-        await firstWarn(message);
+        await firstWarn(message, settings);
         break;
       }
     }
