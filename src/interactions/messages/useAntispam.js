@@ -20,7 +20,7 @@ async function getSpamSettings() {
             antiSpamEnabled: spam.enabled ?? true,
             deleteTimeout: spam.actions?.notifyUser?.deleteTimeoutMs ?? 5000,
             deleteMessages: spam.actions?.deleteMsg ?? true,
-            muteTime: spam.actions?.mute?.muteTimeMs ?? 60000,
+            muteTime: spam.actions?.mute?.muteTimeMs ?? 3600000,
             muteEnabled: spam.actions?.mute?.enabled ?? true,
             giveWarn: spam.actions?.giveWarn ?? true,
         };
@@ -32,7 +32,7 @@ async function getSpamSettings() {
             antiSpamEnabled: true,
             deleteTimeout: 5000,
             deleteMessages: true,
-            muteTime: 60000,
+            muteTime: 3600000,
             muteEnabled: true,
             giveWarn: true,
         };

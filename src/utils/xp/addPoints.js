@@ -5,6 +5,8 @@ const getLimit = require("./getNeededXp.js");
 const updateLevel = require("./updateLevel.js");
 const studentRoleId = require("../../constants/studentRoleId.js");
 const main = require("../../index.js");
+const calculateXP = require("../../interactions/events/events.js");
+const calculateXPLimit = require("../../interactions/events/events.js");
 
 config();
 
@@ -24,14 +26,14 @@ module.exports = async (id, amount, exeption) => {
   }
   const userChek = await Level.findOne({ userId: id });
   if (!userChek.presentXp) {
-    await Level.findOneAndUpdate({ userId: id}, { presentXp: userChek.xp});
+    await Level.findOneAndUpdate({ userId: id }, { presentXp: userChek.xp });
   }
   const user = await Level.findOne({ userId: id });
   const GUILD_ID = process.env.GUILD_ID;
   const guild = main.client.guilds.cache.get(GUILD_ID);
   const member = guild.members.cache.get(id);
   const isStudent = member.roles.cache.has(studentRoleId);
-
+  const xpWithEvents = calculateXP(amount)
   if (exeption) {
     const up = isStudent ? user.xp + amount * 1.25 : user.xp + amount;
     const presentUp = isStudent ? user.presentXp + amount * 1.25 : user.presentXp + amount
