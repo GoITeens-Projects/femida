@@ -6,6 +6,8 @@ async function getEvents() {
         
         const settings = await SettingsInterface.getSettings();
         const events = settings?.events ?? []; // Переконуємось, що події є в налаштуваннях
+
+        
         return events;
     } catch (error) {
         console.error("❌ Помилка отримання івентів:", error);
@@ -19,8 +21,11 @@ async function calculateXP(baseXP) {
     const currentDateObj = new Date();
     let totalXP = baseXP;
 
+
     events.forEach(event => {
         const startDate = event.startDate ? new Date(event.startDate) : null;
+       
+        
         const endDate = event.endDate ? new Date(event.endDate) : null;
 
         if ((!startDate || currentDateObj >= startDate) && (!endDate || currentDateObj <= endDate)) {
@@ -36,7 +41,7 @@ async function calculateXP(baseXP) {
     return totalXP;
 }
 
-module.exports = calculateXP;
+// module.exports = calculateXP;
 
 
 async function calculateXPLimit(baseXP) {
@@ -61,4 +66,4 @@ async function calculateXPLimit(baseXP) {
     return totalXP;
 }
 
-module.exports = calculateXPLimit;
+module.exports = {calculateXPLimit, calculateXP };
