@@ -5,9 +5,13 @@ const {
   xps: { voice, stage, voiceWithAdmin },
   roles: { adminRoles },
 } = require("../../constants/config");
+const SettingsInterface = require("../../utils/settings");
+
 
 const stats = {};
 const intervals = {};
+
+ 
 
 class VoiceActivity {
   constructor({
@@ -29,6 +33,11 @@ class VoiceActivity {
 async function handlePointsDistribution(voiceChannel, client) {
   const members = [...voiceChannel.members.values()];
 
+  const genSettings = await SettingsInterface.getSettings();
+ const settings = genSettings.xps;
+ const voiceAmount = settings?.voice || voice; //? XP for voice
+ const voiceWithAdminAmount = settings?.voiceWithAdmin || voiceWithAdmin; //? XP for voice with admin
+
   const hasAdmin = members.some((member) =>
     adminRoles.some((role) => member.roles.cache.has(role))
   );
@@ -40,7 +49,7 @@ async function handlePointsDistribution(voiceChannel, client) {
           (stat) => stat.id === member.user.id
         );
         if (!userStats || !userStats.adminPointsAdded) {
-          await addPoints(member.user.id, voiceWithAdmin, false);
+          await addPoints(member.user.id, voiceWithAdminAmount, false);
           if (userStats) userStats.adminPointsAdded = true;
         }
       }
@@ -48,7 +57,7 @@ async function handlePointsDistribution(voiceChannel, client) {
       if (!intervals[voiceChannel.id]) {
         intervals[voiceChannel.id] = setInterval(async () => {
           for (const member of members) {
-            await addPoints(member.user.id, voiceWithAdmin, false);
+            await addPoints(member.user.id, voiceWithAdminAmount, false);
           }
         }, 10 * 60 * 1000);
       }
@@ -58,7 +67,7 @@ async function handlePointsDistribution(voiceChannel, client) {
           (stat) => stat.id === member.user.id
         );
         if (!userStats || !userStats.voicePointsAdded) {
-          await addPoints(member.user.id, voice, false);
+          await addPoints(member.user.id, voiceAmount, false);
           if (userStats) userStats.voicePointsAdded = true;
         }
       }
@@ -69,6 +78,10 @@ async function handlePointsDistribution(voiceChannel, client) {
 }
 
 module.exports = async (oldState, newState, client) => {
+  const genSettings = await SettingsInterface.getSettings();
+ const settings = genSettings.xps;
+ const stageAmount = settings?.stage || stage; //? XP for stage
+
   const oldChannel = oldState.channelId
     ? await client.channels.fetch(oldState.channelId)
     : null;
@@ -144,7 +157,7 @@ module.exports = async (oldState, newState, client) => {
     }
 
     if (newChannel.type === 13) {
-      await addPoints(newState.id, stage, false);
+      await addPoints(newState.id, stageAmount, false);
     } else {
       await handlePointsDistribution(newChannel, client);
     }

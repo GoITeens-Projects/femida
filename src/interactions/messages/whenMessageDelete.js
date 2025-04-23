@@ -1,7 +1,7 @@
 const removePoints = require("../../utils/xp/removePoints");
 
 module.exports = async (msg, AuditLogEvent, client) => {
-  const logs = await msg.guild.fetchAuditLogs({
+  try{const logs = await msg.guild.fetchAuditLogs({
     type: AuditLogEvent.MessageDelete,
     limit: 1,
   });
@@ -20,5 +20,8 @@ module.exports = async (msg, AuditLogEvent, client) => {
   const weeks = days / 7;
   if (weeks <= 1 && !user.bot && !target.bot ) {
     removePoints(msg.author.id, 2);
+  }} catch (error) {
+    console.error("Error fetching audit logs:", error);
   }
+  
 };

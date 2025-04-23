@@ -7,6 +7,7 @@ const studentRoleId = require("../../constants/studentRoleId.js");
 const main = require("../../index.js");
 const { calculateXP, calculateXPLimit } = require("../../interactions/events/events.js");
 
+const SettingsInterface = require("../settings.js");
 
 config();
 
@@ -28,29 +29,32 @@ module.exports = async (id, amount, exeption) => {
   if (!userChek.presentXp) {
     await Level.findOneAndUpdate({ userId: id }, { presentXp: userChek.xp });
   }
+  const genSettings = await SettingsInterface.getSettings();
+        const settings = genSettings.xps;
+       
   const user = await Level.findOne({ userId: id });
   const GUILD_ID = process.env.GUILD_ID;
   const guild = main.client.guilds.cache.get(GUILD_ID);
   const member = guild.members.cache.get(id);
   const isStudent = member.roles.cache.has(studentRoleId);
   const xpWithEvents = await calculateXP(amount)
+  const studentMultiplier = settings?.studentMultiplier || 1.25;
 
   if (exeption) {
-    const up = isStudent ? user.xp +  xpWithEvents * 1.25 : user.xp +  xpWithEvents;
-    const presentUp = isStudent ? user.presentXp +  xpWithEvents * 1.25 : user.presentXp + xpWithEvents
+    const up = isStudent ? user.xp + amount * studentMultiplier : user.xp + amount;
+    const presentUp = isStudent ? user.presentXp + amount * studentMultiplier : user.presentXp + amount
     await Level.updateOne({ userId: id }, { xp: up, presentXp: presentUp });
     const newUser = await Level.findOne({ userId: id });
     await updateLevel(newUser, newUser.userId);
     return up;
   } else {
     const limit = getLimit(user.level, isStudent);
-    const xpWithEventsLimit = await calculateXPLimit(limit)
-    if (user.currentXp === xpWithEventsLimit) return;
-    const extra =  xpWithEvents * 1.25;
-    let up = isStudent ? user.xp + extra : user.xp + xpWithEvents;
-    let presentUp = isStudent ? user.presentXp + extra : user.presentXp + xpWithEvents;
+    if (user.currentXp === limit) return;
+    const extra = amount * studentMultiplier;
+    let up = isStudent ? user.xp + extra : user.xp + amount;
+    let presentUp = isStudent ? user.presentXp + extra : user.presentXp + amount;
     let curLimit = isStudent
-      ? user.currentXp + xpWithEvents * 1.25
+      ? user.currentXp + xpWithEvents * studentMultiplier
       : user.currentXp + xpWithEvents;
     if (curLimit > xpWithEventsLimit) {
       curLimit = xpWithEventsLimit;

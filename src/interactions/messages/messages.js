@@ -3,6 +3,7 @@ const addPoints = require("../../utils/xp/addPoints");
 const {
   xps: { message },
 } = require("../../constants/config");
+const SettingsInterface = require("../../utils/settings");
 
 module.exports = async function accrualPoints(msg) {
   if (
@@ -10,6 +11,11 @@ module.exports = async function accrualPoints(msg) {
     !msg.author.bot &&
     sameLetters(msg.content)
   ) {
-    await addPoints(msg.author.id, message, false);
+    const genSettings = await SettingsInterface.getSettings();
+      const settings = genSettings.xps;
+
+      const amount = settings?.message || message
+     
+    await addPoints(msg.author.id, amount, false);
   }
 };
