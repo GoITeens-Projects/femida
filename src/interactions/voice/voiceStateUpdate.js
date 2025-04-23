@@ -4,6 +4,7 @@ const {
 } = require("../../constants/config");
 const addStats = require("../../interactions/statistics/addStats");
 const { nanoid } = require("nanoid");
+const SettingsInterface = require("../../utils/settings");
 // const stats = {
 //   123: {
 //     startTimestamp: 1643723400,
@@ -17,6 +18,8 @@ const { nanoid } = require("nanoid");
 //     ],
 //   },
 // };
+
+              
 const stats = {};
 class VoiceActivity {
   constructor({
@@ -36,6 +39,10 @@ class VoiceActivity {
 }
 
 module.exports = async (oldState, newState, client) => {
+  const genSettings = await SettingsInterface.getSettings();
+  const settings = genSettings.xps;
+  const voiceAmount = settings?.voice || voice; //? XP for voice
+  const stageAmount = settings?.stage || stage; //? XP for stage
   if (oldState.channel && !newState.channel) {
     try {
       const voiceChannel = await client.channels.fetch(oldState.channelId);
@@ -127,10 +134,10 @@ module.exports = async (oldState, newState, client) => {
         userIds.forEach((user) => {
           client.channels.cache.map(async (channel) => {
             if (channel.type === 2) {
-              await addPoints(user, voice, false);
+              await addPoints(user, voiceAmount, false);
             }
             if (channel.type === 13) {
-              await addPoints(user, stage, false);
+              await addPoints(user, stageAmount, false);
             }
           });
         });
@@ -158,10 +165,10 @@ module.exports = async (oldState, newState, client) => {
       if (arrObj.length > 4) {
         client.channels.cache.map(async (channel) => {
           if (channel.type === 2) {
-            await addPoints(newState.id, voice, false);
+            await addPoints(newState.id, voiceAmount, false);
           }
           if (channel.type === 13) {
-            await addPoints(newState.id, stage, false);
+            await addPoints(newState.id, stageAmount, false);
           }
         });
         // await addPoints(newState.id, voice, false);

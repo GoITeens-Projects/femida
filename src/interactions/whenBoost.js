@@ -3,18 +3,24 @@ const addPoints = require("../utils/xp/addPoints");
 const {
   channels: { boostChannel },
 } = require("../constants/config");
+const SettingsInterface = require("../utils/settings");
 
 module.exports = async (oldMember, newMember, client) => {
+  const genSettings = await SettingsInterface.getSettings();
+              const settings = genSettings.xps;
   if (oldMember.premiumSinceTimestamp || newMember.premiumSinceTimestamp) {
     if (
       oldMember.premiumSinceTimestamp !== newMember.premiumSinceTimestamp &&
       newMember.premiumSinceTimestamp > oldMember.premiumSinceTimestamp
     ) {
+        
+            
       const userId = newMember.user.id;
+      const amount = settings?.boost || 500; //? XP for boost
 
       //? Adding XP for boost
 
-      const addedXp = await addPoints(userId, 500, true);
+      const addedXp = await addPoints(userId, amount, true);
 
       //? Sending a message of boost into the system channel
 

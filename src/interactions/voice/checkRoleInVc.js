@@ -3,6 +3,9 @@ const {
   xps: { voiceWithAdmin },
   roles: { adminRoles },
 } = require("../../constants/config");
+const SettingsInterface = require("../../utils/settings");
+
+
 
 module.exports = async function checkRoleInVc(oldState, newState, client) {
   if (newState.channelId) {
@@ -10,6 +13,10 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
       const voiceChannels = client.channels.cache.filter(
         (elem) => elem.type === 2
       );
+      const genSettings = await SettingsInterface.getSettings();
+      const settings = genSettings.xps;
+     const voiceWithAdminAmount = settings?.voiceWithAdmin || voiceWithAdmin;
+
       const arrObj = [];
       voiceChannels.forEach((voiceChannel) => {
         arrObj.push(voiceChannel.members);
@@ -31,7 +38,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
         ) {
           const userIds = Object.keys(members).map((key) => members.get(key));
           userIds.forEach(async (user) => {
-            await addPoints(user, voiceWithAdmin, false);
+            await addPoints(user, voiceWithAdminAmount, false);
           });
         } else {
           const userIds = Object.keys(members).map((key) => members.get(key));
@@ -44,7 +51,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
                     .roles.cache.has(role) === true
               ).length !== 0
             ) {
-              await addPoints(newState.id, voiceWithAdmin, false);
+              await addPoints(newState.id, voiceWithAdminAmount, false);
             }
           });
         }
@@ -69,7 +76,7 @@ module.exports = async function checkRoleInVc(oldState, newState, client) {
                   .roles.cache.has(role) === true
             ).length !== 0
           ) {
-            await addPoints(newState.id, voiceWithAdmin, false);
+            await addPoints(newState.id, voiceWithAdminAmount, false);
           }
         });
       }, 600000);
