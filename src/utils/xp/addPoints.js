@@ -5,6 +5,8 @@ const getLimit = require("./getNeededXp.js");
 const updateLevel = require("./updateLevel.js");
 const studentRoleId = require("../../constants/studentRoleId.js");
 const main = require("../../index.js");
+const { calculateXP, calculateXPLimit } = require("../../interactions/events/events.js");
+
 const SettingsInterface = require("../settings.js");
 
 config();
@@ -25,7 +27,7 @@ module.exports = async (id, amount, exeption) => {
   }
   const userChek = await Level.findOne({ userId: id });
   if (!userChek.presentXp) {
-    await Level.findOneAndUpdate({ userId: id}, { presentXp: userChek.xp});
+    await Level.findOneAndUpdate({ userId: id }, { presentXp: userChek.xp });
   }
   const genSettings = await SettingsInterface.getSettings();
         const settings = genSettings.xps;
@@ -35,6 +37,7 @@ module.exports = async (id, amount, exeption) => {
   const guild = main.client.guilds.cache.get(GUILD_ID);
   const member = guild.members.cache.get(id);
   const isStudent = member.roles.cache.has(studentRoleId);
+  const xpWithEvents = await calculateXP(amount)
   const studentMultiplier = settings?.studentMultiplier || 1.25;
 
   if (exeption) {
@@ -51,11 +54,11 @@ module.exports = async (id, amount, exeption) => {
     let up = isStudent ? user.xp + extra : user.xp + amount;
     let presentUp = isStudent ? user.presentXp + extra : user.presentXp + amount;
     let curLimit = isStudent
-      ? user.currentXp + amount * studentMultiplier
-      : user.currentXp + amount;
-    if (curLimit > limit) {
-      curLimit = limit;
-      const addAmount = limit - user.currentXp
+      ? user.currentXp + xpWithEvents * studentMultiplier
+      : user.currentXp + xpWithEvents;
+    if (curLimit > xpWithEventsLimit) {
+      curLimit = xpWithEventsLimit;
+      const addAmount = xpWithEventsLimit - user.currentXp
       up = user.xp + addAmount;
       presentUp = user.presentXp + addAmount
     }
