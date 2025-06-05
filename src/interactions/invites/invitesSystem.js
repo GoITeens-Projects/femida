@@ -10,6 +10,9 @@ const {
 } = require("../../constants/config");
 const { Collection } = require("discord.js");
 const invites = new Collection();
+const SettingsInterface = require("../../utils/settings");
+
+
 
 class InvitesSystem {
   constructor() {
@@ -25,6 +28,10 @@ class InvitesSystem {
     });
   }
   async addInvite(invite) {
+    const genSettings = await SettingsInterface.getSettings();
+    const settings = genSettings.xps;
+    const inviteAmount = settings?.invite || invite; //? XP for invite
+
     invites.get(invite.guild.id).set(invite.code, invite.uses);
     try {
       //? checking if invitor is admin
@@ -102,7 +109,7 @@ class InvitesSystem {
     try {
       if (validUses === 0) return;
       const inviteData = await Invite.findOne({ code: inviteCode });
-      await addPoints(inviteData.inviterId, invite, true);
+      await addPoints(inviteData.inviterId, inviteAmount, true);
       await Invite.deleteOne({ code: inviteCode });
     } catch (err) {
       console.log("Error while claiming invite - ", err);

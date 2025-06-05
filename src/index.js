@@ -35,6 +35,7 @@ const newVoice = require("./interactions/voice/newVoice.js");
 const phishing = require("./interactions/messages/phishing.js");
 const checkInvitesEveryDay = require("./interactions/invites/checkInvitesEveryDay.js");
 const CustomInteractions = require("./customInteractions/deployCustomInteractions.js");
+const emogisDetect = require("./interactions/messages/emojisDetect.js");
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");
 const { guildId } = require("./constants/config.js");
@@ -140,6 +141,7 @@ client.on("messageCreate", async (message) => {
   await useAntispam(message);
   await badWords(message);
   await phishing(message);
+  await emogisDetect(message)
 });
 
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {

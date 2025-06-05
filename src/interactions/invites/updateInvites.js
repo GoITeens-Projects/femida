@@ -1,4 +1,7 @@
 const addPoints = require("../../utils/xp/addPoints");
+const SettingsInterface = require("../../utils/settings");
+
+
 
 module.exports = async function updateInvites(person, client) {
   client.guilds.cache.each((guild) => {
@@ -15,8 +18,12 @@ module.exports = async function updateInvites(person, client) {
 
   let res = await person.guild.members.fetch();
 
-  function up() {
+  async function up() {
+    const genSettings = await SettingsInterface.getSettings();
+    const settings = genSettings.xps;
+    const inviteAmount = settings?.invite || invite; //? XP for invite
     res.forEach(async (member) => {
+      
       if (!member.user.bot) {
         if (
           global.tempObj[String(member.user.id)] !==
@@ -32,7 +39,7 @@ module.exports = async function updateInvites(person, client) {
             member.joinedAt.getMonth() < month &&
             global.userList[String(member.user.id)] > 0
           ) {
-            await addPoints(member.user.id, 300);
+            await addPoints(member.user.id, inviteAmount, true);
             global.userList[String(member.user.id)]--;
           }
         }
