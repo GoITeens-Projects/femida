@@ -56,9 +56,9 @@ module.exports = async (id, amount, exeption) => {
     let curLimit = isStudent
       ? user.currentXp + xpWithEvents * studentMultiplier
       : user.currentXp + xpWithEvents;
-    if (curLimit > xpWithEventsLimit) {
-      curLimit = xpWithEventsLimit;
-      const addAmount = xpWithEventsLimit - user.currentXp
+    if (curLimit > limit) {
+      curLimit = limit;
+      const addAmount = limit - user.currentXp
       up = user.xp + addAmount;
       presentUp = user.presentXp + addAmount
     }
