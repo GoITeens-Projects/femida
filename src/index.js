@@ -34,7 +34,7 @@ const sendStats = require("./interactions/statistics/sendStats.js");
 const newVoice = require("./interactions/voice/newVoice.js");
 const phishing = require("./interactions/messages/phishing.js");
 const checkInvitesEveryDay = require("./interactions/invites/checkInvitesEveryDay.js");
-
+const CustomInteractions = require("./customInteractions/deployCustomInteractions.js");
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");
 const { guildId } = require("./constants/config.js");
@@ -79,6 +79,8 @@ for (const folder of commandFolders) {
   }
 }
 
+const customInteractions = new CustomInteractions();
+
 config();
 
 client.on("ready", async (op) => {
@@ -118,7 +120,11 @@ client.on("guildMemberRemove", async (person) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  if (!interaction.isChatInputCommand()) {
+    //? menu's and modals handlers
+    customInteractions.handlCustomInteractions(interaction, client);
+    return;
+  }
   addNewMember(interaction);
   getInteractionCommands(interaction, client);
 });
@@ -149,7 +155,7 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
 
 client.on("messageDelete", async (msg) => {
   if (msg.channel.type === 1) return;
-  whenMessageDelete(msg, AuditLogEvent, client);
+  // whenMessageDelete(msg, AuditLogEvent, client);
 });
 
 client.login(TOKEN);

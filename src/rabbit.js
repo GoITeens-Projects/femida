@@ -1,6 +1,7 @@
 const amqp = require("amqplib");
 const handleSettings = require("./utils/rabbitHandlers/handleSettings");
 const handleVerification = require("./utils/rabbitHandlers/handleVerification");
+const handleGiftRequestChange = require("./utils/rabbitHandlers/handleGiftRequestChange");
 
 class Rabbit {
   constructor() {
@@ -32,6 +33,7 @@ class Rabbit {
         console.log("Error while receiving Rabbit message: ", err);
       }
     });
+
     await this.channel.assertQueue("verification", { durable: true });
     this.channel.consume("verification", async (msg) => {
       try {
@@ -39,6 +41,19 @@ class Rabbit {
         if (msg !== null) {
           const messageContent = JSON.parse(msg.content.toString());
           await handleVerification(messageContent.body, this.channel, msg);
+        }
+      } catch (err) {
+        console.log("Error while receiving Rabbit message: ", err);
+      }
+    });
+
+    await this.channel.assertQueue("gift-requests", { durable: true });
+    this.channel.consume("gift-requests", async (msg) => {
+      try {
+        console.log("Rabbit MSG", msg);
+        if (msg !== null) {
+          const messageContent = JSON.parse(msg.content.toString());
+          await handleGiftRequestChange(messageContent.body, this.channel, msg);
         }
       } catch (err) {
         console.log("Error while receiving Rabbit message: ", err);
