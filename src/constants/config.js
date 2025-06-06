@@ -21,7 +21,7 @@ module.exports = {
   roles: {
     studentRole: "1262374645521190922",
     graduateRole: "",
-    adminRoles: ["1192071473892970496", "1192070306362314802"],
+    adminRoles: ["1192071473892970496"],
   },
   levelRoles: [
     { level: 1, roleId: "1375440386956202056" },
