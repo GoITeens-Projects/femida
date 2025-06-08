@@ -128,7 +128,7 @@ module.exports = {
         fetchedUser.level = await updateLevel(fetchedUser, targetUserId);
       }
 
-      const limit = getLimit(fetchedUser.level);
+      const limit = await getLimit(fetchedUser.level);
 
       const rankCard = await createRankCard(targetUserObj, fetchedUser);
       rankCard.build().then(async (data) => {
