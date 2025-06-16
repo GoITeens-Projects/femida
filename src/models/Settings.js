@@ -160,7 +160,11 @@ const SettingSchema = new mongoose.Schema({
     slapLvl: { type: Number, default: 0 },
   },
   warns: {
-    onMute: { type: String, default: "remove-all-warns" },
+    onMute: {
+      type: String,
+      default: "remove-all-warns",
+      enum: ["remove-all-warns", "remove-all-exept-one", "save-all"],
+    },
     //? remove-all-warns
     //? remove-all-exept-one
     //? save-all
