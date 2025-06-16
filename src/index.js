@@ -141,7 +141,7 @@ client.on("messageCreate", async (message) => {
   await useAntispam(message);
   await badWords(message);
   await phishing(message);
-  await emogisDetect(message)
+  await emogisDetect(message);
 });
 
 client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
@@ -161,5 +161,27 @@ client.on("messageDelete", async (msg) => {
 });
 
 client.login(TOKEN);
+
+const sendExitMessage = async () => {
+  const channel = await client.channels.fetch("1192080421677191288");
+  await channel.send("<@579623837495328808> <@1137391988417769583> я впала🥀 \nпідійміть мене будь ласка");
+};
+
+process.on("uncaughtException", async (error) => {
+  console.error(error);
+  await sendExitMessage();
+  process.exit(1);
+});
+
+process.on("unhandledRejection", async (reason, promise) => {
+  console.error(reason);
+  await sendExitMessage();
+  process.exit(1);
+});
+
+process.on("SIGINT", async () => {
+  await sendExitMessage();
+  process.exit(0);
+});
 
 module.exports.client = client;

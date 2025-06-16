@@ -40,6 +40,7 @@ module.exports = {
     boostChannel: "1192080421677191288",
     ratingChannel: "1192080421677191288",
     levelChannel: "1192080421677191288",
+    emergencyChannel: "1192080421677191288",
   },
   extraMultipliers: {
     studentMultiplier: 1.25,
@@ -97,6 +98,7 @@ module.exports = {
 //     boostChannel: "1050608203945234442",
 //     ratingChannel: "1050608203945234442",
 //     levelChannel: "1050608203945234442",
+//     emergencyChannel: "1189511546066452503",
 //   },
 //   extraMultipliers: {
 //     studentMultiplier: 1.25,
