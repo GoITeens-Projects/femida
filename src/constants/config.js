@@ -21,7 +21,7 @@ module.exports = {
   roles: {
     studentRole: "1262374645521190922",
     graduateRole: "",
-    adminRoles: ["1192071473892970496", "1192070306362314802"],
+    adminRoles: ["1192071473892970496"],
   },
   levelRoles: [
     { level: 1, roleId: "1375440386956202056" },
@@ -41,6 +41,7 @@ module.exports = {
     ratingChannel: "1192080421677191288",
     levelChannel: "1192080421677191288",
     emergencyChannel: "1192080421677191288",
+    ticketChannel: "1384147216519925780",
   },
   extraMultipliers: {
     studentMultiplier: 1.25,
@@ -99,6 +100,7 @@ module.exports = {
 //     ratingChannel: "1050608203945234442",
 //     levelChannel: "1050608203945234442",
 //     emergencyChannel: "1189511546066452503",
+//     ticketChannel: "1050605419975946250",
 //   },
 //   extraMultipliers: {
 //     studentMultiplier: 1.25,
