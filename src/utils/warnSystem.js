@@ -2,6 +2,7 @@ const { EmbedBuilder, messageLink } = require("discord.js");
 const Level = require("../models/Level");
 const { guildId } = require("../constants/config");
 const main = require("../index");
+const SettingsInterface = require("../utils/settings");
 
 class WarnSystem {
   constructor() {
@@ -76,17 +77,36 @@ class WarnSystem {
       console.log(err);
     }
   }
-  async isEnough(warns, id, sendDirect, reason) {
-    const requiredWarns = 5;
-    if (sendDirect && warns < requiredWarns)
+  async isEnough(warns, id, sendDirectCmd, reason) {
+    const {
+      warns: { actions },
+    } = await SettingsInterface.getSettings();
+    console.log(warns, actions);
+    const foundAction = actions.find((action) => action.warnsAmount === warns);
+    let requiredWarns = actions.find((elem) => elem.ban)?.warnsAmount;
+    if (requiredWarns === undefined) requiredWarns = 5;
+    if (foundAction?.kick || foundAction?.ban) {
+      const guild = main.client.guilds.cache.get(guildId);
+      await Level.deleteOne({ userId: id });
+      const member = await guild.members.fetch(id);
+      if (foundAction.kick) {
+        console.log("KICK"); //? message here
+        // member.kick({ reason: "Велика кількість попереджень" });
+        return;
+      }
+      if (foundAction.ban) {
+        console.log("BAN");
+        await this.sendBanMessage(id);
+        // member.ban({ reason: "Достатня кількість попереджень для бану" });
+        return;
+      }
+    }
+    if (sendDirectCmd)
       return await this.sendDirectCmdMessage(id, warns, requiredWarns, reason);
-    if (Math.round(warns) >= 3 && warns < requiredWarns) return;
-    await this.sendDirectMessage(id, warns, requiredWarns);
-    if (warns < requiredWarns) return;
-    const guild = main.client.guilds.cache.get(guildId);
-    await this.sendBanMessage(id);
-    await Level.deleteOne({ userId: id });
-    // guild.ban(id, { reason: "Достатня кількість попереджень для бану" });
+    // if (Math.round(warns) >= 3)
+    return await this.sendDirectMessage(id, warns, requiredWarns);
+
+    // if (warns < requiredWarns) return;
   }
   async giveWarn(userId, reason, sendDirect = false) {
     const currentUser = await Level.findOne({ userId });
