@@ -2,12 +2,20 @@ const { ButtonBuilder } = require("@discordjs/builders");
 const { ButtonStyle, PermissionFlagsBits } = require("discord.js");
 const fetchAllMessages = require("../../utils/fetchAllMessages");
 const Ticket = require("../../models/Ticket");
+const {
+  roles: { adminRoles },
+} = require("../../constants/config");
 
 const closeTicketBtn = new ButtonBuilder()
   .setCustomId("close-ticket-btn")
   .setLabel("Закрити")
   .setStyle(ButtonStyle.Danger)
   .setDisabled(false);
+
+const adminPermissions = adminRoles.map((roleId) => ({
+  id: roleId,
+  allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.SendMessages],
+}));
 
 const allowedTypes = [
   "image/png",
@@ -189,6 +197,11 @@ module.exports = {
     interaction.channel.edit({
       permissionOverwrites: [
         { id: interaction.user.id, deny: [PermissionFlagsBits.SendMessages] },
+        {
+          id: interaction.guild.roles.everyone.id,
+          deny: [PermissionFlagsBits.ViewChannel],
+        },
+        ...adminPermissions,
       ],
     });
 
@@ -312,13 +325,14 @@ module.exports = {
         }, 1000);
       } else {
         //? Closing for user but writing about error
-        interaction.channel.edit({
+        await interaction.channel.edit({
           name: `closed-${interaction.channel.name.replace("ticket-", "")}`,
           permissionOverwrites: [
             {
-              id: interaction.user.id,
+              id: interaction.guild.roles.everyone.id,
               deny: [PermissionFlagsBits.ViewChannel],
             },
+            ...adminPermissions,
           ],
         });
         interaction.editReply("Сталася помилка архівації тікету⚠️");
@@ -326,13 +340,14 @@ module.exports = {
     } catch (e) {
       console.log(e);
       //? Closing for user but writing about error
-      interaction.channel.edit({
+      await interaction.channel.edit({
         name: `closed-${interaction.channel.name.replace("ticket-", "")}`,
         permissionOverwrites: [
           {
-            id: interaction.user.id,
+            id: interaction.guild.roles.everyone.id,
             deny: [PermissionFlagsBits.ViewChannel],
           },
+          ...adminPermissions,
         ],
       });
       interaction.editReply("Сталася помилка архівації тікету⚠️");
