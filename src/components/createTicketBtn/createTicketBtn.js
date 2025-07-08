@@ -72,5 +72,8 @@ module.exports = {
     await interaction.editReply({
       content: `Тікет створено! Тобі до <#${channel.id}>`,
     });
+    setTimeout(async () => {
+      await interaction.deleteReply();
+    }, 10000);
   },
 };
