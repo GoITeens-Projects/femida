@@ -297,7 +297,7 @@ module.exports = {
       createdAt: savedTicket.createdAt,
     };
     try {
-      const resp = await fetch("http://localhost:5000/tickets", {
+      const resp = await fetch(`https://${process.env.FEMIDA_API}/tickets`, {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
