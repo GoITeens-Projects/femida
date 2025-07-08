@@ -165,18 +165,18 @@ client.login(TOKEN);
 
 process.on("uncaughtException", async (error) => {
   console.error(error);
-  await sendExitMessage();
+  await sendExitMessage(client);
   process.exit(1);
 });
 
 process.on("unhandledRejection", async (reason, promise) => {
   console.error(reason);
-  await sendExitMessage();
+  await sendExitMessage(client);
   process.exit(1);
 });
 
 process.on("SIGINT", async () => {
-  await sendExitMessage();
+  await sendExitMessage(client);
   process.exit(0);
 });
 
