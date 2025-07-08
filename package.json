@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon ./src/index.js",
-    "cmds": "node ./src/deploy-commands.js"
+    "cmds": "node ./src/deploy-commands.js",
+    "ticket:message": "node ./src/sendTicketMsg.js"
   },
   "keywords": [],
   "author": "",

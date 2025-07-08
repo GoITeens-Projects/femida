@@ -1,7 +1,7 @@
 const {
   extraMultipliers: { studentMultiplier },
 } = require("../../constants/config");
-const calculateXPLimit = require("../../interactions/events/events");
+const { calculateXPLimit } = require("../../interactions/events/events");
 const SettingsInterface = require("../../utils/settings");
 
 module.exports = async (level, isStudent) => {
@@ -13,9 +13,9 @@ module.exports = async (level, isStudent) => {
     return isStudent ? baseXpLimit * studentMultiplier : baseXpLimit;
   } else {
     const standart = Math.round(150 * (1 + (level - 1) * 0.1));
-    console.log("стандарти:", standart);
+    // console.log("стандарти:", standart);
     const limitWithEvents = await calculateXPLimit(standart);
-    console.log("ліміти:", limitWithEvents.then());
+    // console.log("ліміти:", limitWithEvents);
     return isStudent ? limitWithEvents * studentMultiplier : limitWithEvents;
   }
 };

@@ -12,8 +12,6 @@ const { Collection } = require("discord.js");
 const invites = new Collection();
 const SettingsInterface = require("../../utils/settings");
 
-
-
 class InvitesSystem {
   constructor() {
     this.claimInviteXp = this.claimInviteXp.bind(this);
@@ -158,29 +156,44 @@ class InvitesSystem {
       console.log("valid uses - ", validUsesAmount);
       if (leftGuests.length !== 0) {
         const leftGuestsIds = leftGuests.map((leftGuest) => leftGuest.id);
-        await invite.update({
-          guests: invite.guests.filter((g) => !leftGuestsIds.includes(g.id)),
-        });
+
+        await Invite.findOneAndUpdate(
+          { inviteCode: invite.code },
+          {
+            guests: invite.guests.filter((g) => !leftGuestsIds.includes(g.id)),
+          }
+        );
       }
       if (validUsesAmount === 0) return;
       //? checking dates and terms
-      // if (!invite.usedDates) return;
-      // const diffMs = Date.now - new Date(invite.usedDate).getUTCMilliseconds();
+      if (!invite.usedDates) return;
+      // const diffMs = Date.now() - new Date(invite.usedDate).getUTCMilliseconds();
       // const targetDate = new Date(invite.usedDate);
       // targetDate.setUTCMonth(targetDate.getUTCMonth() + 1);
       // const targetDateDiff =
       //   targetDate.getUTCMilliseconds() -
       //   new Date(invite.usedDate).getUTCMilliseconds();
       // if (diffMs < targetDateDiff) return;
+      const usedDate = new Date(invite.usedDate);
+      const targetDate = new Date(usedDate);
+      targetDate.setUTCMonth(targetDate.getUTCMonth() + 1);
+
+      const now = new Date();
+
+      if (now < targetDate) return;
       // //? checking if new user is still on server
-      // const newbie = await guild?.members.fetch(invite.guestId);
-      // if (!newbie) {
-      //   //* invite is alright but new user has left the server
-      //   await Invite.deleteOne({ code: invite.inviteCode });
-      //   return;
-      // }
-      //? claiming reward and deleting invite from DB
-      this.claimInviteXp(invite.code, validUsesAmount);
+      try {
+        const newbie = await guild?.members.fetch(invite.guestId);
+        if (!newbie) {
+          //* invite is alright but new user has left the server
+          await Invite.deleteOne({ code: invite.inviteCode });
+          return;
+        }
+        //? claiming reward and deleting invite from DB
+        this.claimInviteXp(invite.code, validUsesAmount);
+      } catch (err) {
+        console.log(err);
+      }
     });
   }
 }

@@ -15,7 +15,7 @@ module.exports = async function sendDmMsg({ id, level }) {
           .setColor("#466f8f")
           .setTitle("Вітаю, ти досяг/ла нового ювілейного рівня - " + level)
           .setDescription(
-            "А це значить що ти маєш право на подарунок! Для того щоб його отримати звернись до адміністрації серверу)"
+            "А це значить, що зараз - саме час перевірити наявні подарунки. Можливо, ти вже можеш отримати якийсь))"
           )
           .setAuthor({
             name: userObj.username,
@@ -28,7 +28,7 @@ module.exports = async function sendDmMsg({ id, level }) {
       ],
       files: [attachment],
     };
-    userObj.send(levelEmbed);
+    await userObj.send(levelEmbed);
   } catch (err) {
     console.log("Error while sending dm level message - " + err);
   }
