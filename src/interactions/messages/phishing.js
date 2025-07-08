@@ -37,8 +37,48 @@ module.exports = async (message) => {
   if (matches.length > 0) {
     for (const match of matches) {
       const url = match[1] || match[0];
-      if (settings.scamLinks.targerLinks.some((scamLink) => scamLink === url)) {
-        if (settings.scamLinks.mute.enabled) {
+      if (url.startsWith("https://discord.gg")) {
+        const guildFromInvite = (
+          await message.client.fetchInvite(
+            url.replace("https://discord.gg/", "")
+          )
+        )?.guild;
+
+        if (
+          !guildFromInvite ||
+          (guildFromInvite.id !== "953708116611051600" &&
+            guildFromInvite.id !== "1240710842006110260")
+        ) {
+          await message.delete();
+          await message.channel.send(
+            "❗Посилання на інші Discord сервери заборонено"
+          );
+        }
+        continue;
+      }
+      if (settings.scamLinks.targetLinks.some((scamLink) => scamLink === url)) {
+        if (settings.scamLinks.actions.mute.enabled) {
+          await message.guild.members.cache
+            .get(message.author.id)
+            .timeout(
+              settings.scamLinks.actions.mute.muteTimeMs,
+              "Мут за фішинг(скорочувач посилань)"
+            );
+        }
+        if (settings.scamLinks.actions.deleteMsg) {
+          await message.delete();
+        }
+        if (settings.scamLinks.actions.notifyUser.enabled) {
+          await message.channel.send(
+            `<@${message.author.id}>, не відправляй фішинг посилань!`
+          );
+        }
+        return;
+      }
+      // console.log(`Знайдено посилання: ${url}`);
+
+      if (phishUrls.some((phishUrl) => url.includes(phishUrl))) {
+        if (settings.scamLinks.actions.mute.enabled) {
           await message.guild.members.cache
             .get(message.author.id)
             .timeout(
@@ -46,55 +86,30 @@ module.exports = async (message) => {
               "Мут за фішинг(скорочувач посилань)"
             );
         }
-        if (settings.scamLinks.deleteMsg) {
+        if (settings.scamLinks.actions.deleteMsg) {
           await message.delete();
         }
-        if (settings.scamLinks.notifyUser.enabled) {
+        if (settings.scamLinks.actions.notifyUser.enabled) {
           await message.channel.send(
             `<@${message.author.id}>, не відправляй фішинг посилань!`
           );
         }
         return;
-      }
-      console.log(`Знайдено посилання: ${url}`);
-
-      if (phishUrls.some((url) => url.includes(url))) {
-        if (settings.scamLinks.mute.enabled) {
-          await message.guild.members.cache
-            .get(message.author.id)
-            .timeout(
-              settings.scamLink.mute.muteTimeMs,
-              "Мут за фішинг(скорочувач посилань)"
-            );
-        }
-        if (settings.scamLinks.deleteMsg) {
-          await message.delete();
-        }
-        if (settings.scamLinks.notifyUser.enabled) {
-          await message.channel.send(
-            `<@${message.author.id}>, не відправляй фішинг посилань!`
-          );
-        }
-        return;
-      }
-
-      if (url.includes("discord.gg") && !url.includes("eMEVTNvg")) {
-        await message.delete();
       }
 
       if (phishingRegex.test(url) || redirectionRegex.test(url)) {
-        if (settings.scamLinks.mute.enabled) {
+        if (settings.scamLinks.actions.mute.enabled) {
           await message.guild.members.cache
             .get(message.author.id)
             .timeout(
-              settings.scamLink.mute.muteTimeMs,
+              settings.scamLink.actions.mute.muteTimeMs,
               "Мут за фішинг(скорочувач посилань)"
             );
         }
-        if (settings.scamLinks.deleteMsg) {
+        if (settings.scamLinks.actions.deleteMsg) {
           await message.delete();
         }
-        if (settings.scamLinks.notifyUser.enabled) {
+        if (settings.scamLinks.actions.notifyUser.enabled) {
           await message.channel.send(
             `<@${message.author.id}>, не відправляй фішинг посилань!`
           );

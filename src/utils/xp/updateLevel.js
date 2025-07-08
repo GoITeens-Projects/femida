@@ -27,12 +27,12 @@ module.exports = async function updateLevel({ level, xp }, userId) {
     await sendLevelNotification(params);
 
     // Рівні, на які треба видавати ролі
-    const roleLevels = cfg.levelRoles.map(role => role.level);
+    const roleLevels = cfg.levelRoles.map((role) => role.level);
 
     for (let i = level + 1; i <= newLevel; i++) {
       try {
         if (roleLevels.includes(i)) {
-          await sendDmMsg({ id: userId, level: i });
+          if (i !== 1) await sendDmMsg({ id: userId, level: i });
           await addRoleLevel({ level: i, xp }, userId);
           // await addGifters(userId, i);
         }

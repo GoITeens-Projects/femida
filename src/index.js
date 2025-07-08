@@ -36,6 +36,7 @@ const phishing = require("./interactions/messages/phishing.js");
 const checkInvitesEveryDay = require("./interactions/invites/checkInvitesEveryDay.js");
 const CustomInteractions = require("./customInteractions/deployCustomInteractions.js");
 const emogisDetect = require("./interactions/messages/emojisDetect.js");
+const sendExitMessage = require("./utils/sendExitMessage.js");
 // імпорт констант
 const antiSpam = require("./constants/antiSpam.js");
 const { guildId } = require("./constants/config.js");
@@ -155,17 +156,12 @@ client.on("voiceStateUpdate", async (oldState, newState) => {
   // await checkRoleInVc(oldState, newState, client);
 });
 
-client.on("messageDelete", async (msg) => {
-  if (msg.channel.type === 1) return;
-  // whenMessageDelete(msg, AuditLogEvent, client);
-});
+// client.on("messageDelete", async (msg) => {
+//   if (msg.channel.type === 1) return;
+//   // whenMessageDelete(msg, AuditLogEvent, client);
+// });
 
 client.login(TOKEN);
-
-const sendExitMessage = async () => {
-  const channel = await client.channels.fetch("1192080421677191288");
-  await channel.send("<@579623837495328808> <@1137391988417769583> я впала🥀 \nпідійміть мене будь ласка");
-};
 
 process.on("uncaughtException", async (error) => {
   console.error(error);

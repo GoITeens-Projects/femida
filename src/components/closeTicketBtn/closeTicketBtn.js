@@ -1,5 +1,6 @@
 const { ButtonBuilder } = require("@discordjs/builders");
 const { ButtonStyle, PermissionFlagsBits } = require("discord.js");
+const fetchAllMessages = require("../../utils/fetchAllMessages");
 const Ticket = require("../../models/Ticket");
 
 const closeTicketBtn = new ButtonBuilder()
@@ -26,35 +27,122 @@ class ShortAttachment {
 }
 
 class MessageCustomEmoji {
-  constructor({ id, index }) {
-    this.id = id;
+  constructor(emoji, url, index) {
+    this.emoji = emoji;
+    this.url = url;
     this.index = index;
   }
 }
 
-class MessageReactions {
+class MessageMention {
+  constructor(type, id, mention, index) {
+    this.type = type;
+    this.id = id;
+    this.mention = mention;
+    this.index = index;
+  }
+}
+
+class MessageReaction {
   constructor(emoji, users) {
     this.emoji = emoji;
     this.users = users;
   }
 }
 
+// class Message {
+//   constructor(
+//     { content, author: { id: authorId }, createdTimestamp, isForwarded },
+//     attachments,
+//     customEmojis,
+//     mentions,
+//     reactions
+//   ) {
+//     this.content = content;
+//     this.isForwarded = isForwarded;
+//     this.author = {
+//       id: authorId,
+//     };
+//     this.createdAtTimestamp = createdTimestamp;
+//     this.attachments = attachments;
+//     this.customEmojis = customEmojis;
+//     this.mentions = mentions;
+//     this.reactions = reactions;
+//   }
+// }
+
 class Message {
-  constructor(
-    { content, author: { id: authorId }, createdTimestamp, isForwarded },
-    attachments,
-    customEmojis,
-    mentions
-  ) {
-    this.content = content;
-    this.isForwarded = isForwarded;
-    this.author = {
-      id: authorId,
-    };
-    this.createdAtTimestamp = createdTimestamp;
-    this.attachments = attachments;
-    this.customEmojis = customEmojis;
-    this.mentions = mentions;
+  checkAndRewriteForwardedMsg(msg) {
+    if (
+      msg.content === "" &&
+      msg.attachments.size === 0 &&
+      msg.messageSnapshots
+    ) {
+      //? checking if message is forwaded
+      this.isForwarded = true;
+      const referenceMessage = msg.messageSnapshots.get(
+        msg.reference.messageId
+      );
+      this.content = referenceMessage.content;
+      const refAttachments = [];
+      if (referenceMessage.attachments.size !== 0) {
+        //? adding attachments from forwarded message
+        referenceMessage.attachments
+          .filter((a) => allowedTypes.includes(a.contentType))
+          .forEach((a) => {
+            refAttachments.push(new ShortAttachment(a));
+          });
+        this.attachments = refAttachments;
+      }
+    }
+  }
+  extractAttachments(msg) {
+    const attachments = [];
+    if (msg.attachments.size !== 0) {
+      msg.attachments
+        .filter((a) => allowedTypes.includes(a.contentType))
+        .forEach((a) => {
+          attachments.push(new ShortAttachment(a));
+        });
+    }
+    return attachments;
+  }
+  extractReactions(msg) {
+    let reactions = [];
+    if (msg.reactions.cache.size !== 0) {
+      //? adding reactions to message
+      reactions = Array.from(msg.reactions.cache.values()).reduce(
+        async (accPromise, reaction) => {
+          const acc = await accPromise;
+          const users = Array.from(
+            (await reaction.users.fetch()).values()
+          ).filter((user) => !user.bot);
+          if (users.length === 0) return acc;
+          acc.push(
+            new MessageReaction(
+              reaction.emoji.id
+                ? `https://cdn.discordapp.com/emojis/${reaction.emoji.id}.png`
+                : reaction.emoji.name,
+              users.map(({ id }) => id)
+            )
+          );
+          return acc;
+        },
+        Promise.resolve([])
+      );
+    }
+    return reactions;
+  }
+  constructor(msg) {
+    this.content = msg.content;
+    this.author = { id: msg.author.id };
+    this.isForwarded = false;
+    this.createdAtTimestamp = msg.createdTimestamp;
+    this.attachments = this.extractAttachments(msg);
+    this.customEmojis = extractCustomEmojis(this.content);
+    this.mentions = extractMentions(this.content);
+    this.reactions = this.extractReactions(msg);
+    this.checkAndRewriteForwardedMsg(msg);
   }
 }
 
@@ -66,11 +154,13 @@ function extractCustomEmojis(msg) {
     const fullMatch = match[0];
     const emojiId = match[1];
     const startIndex = match.index;
-    results.push({
-      emoji: fullMatch,
-      url: `https://cdn.discordapp.com/emojis/${emojiId}`,
-      index: startIndex,
-    });
+    results.push(
+      new MessageCustomEmoji(
+        fullMatch,
+        `https://cdn.discordapp.com/emojis/${emojiId}`,
+        startIndex
+      )
+    );
   }
   return results;
 }
@@ -82,40 +172,14 @@ function extractMentions(content) {
     role: /<@&(\d+)>/g,
     channel: /<#(\d+)>/g,
   };
-
   for (const [type, regex] of Object.entries(patterns)) {
     let match;
     while ((match = regex.exec(content)) !== null) {
-      results.push({
-        type,
-        id: match[1],
-        mention: match[0],
-        index: match.index,
-      });
+      results.push(new MessageMention(type, match[1], match[0], match.index));
     }
   }
-
   return results;
 }
-
-// function getReactionsArray(msg) {
-//   return Promise.all(
-//     Array.from(msg.reactions.cache.values()).map(async (reaction) => {
-//       const users = Array.from((await reaction.users.fetch()).values()).filter(
-//         (user) => !user.bot
-//       );
-
-//       if (users.length === 0) return null;
-
-//       return new MessageReactions(
-//         reaction.emoji.id
-//           ? `https://cdn.discordapp.com/emojis/${reaction.emoji.id}`
-//           : reaction.emoji.name,
-//         users.map(({ id }) => id)
-//       );
-//     })
-//   ).then((results) => results.filter(Boolean)); // Removes nulls
-// }
 
 module.exports = {
   component: closeTicketBtn,
@@ -128,79 +192,91 @@ module.exports = {
       ],
     });
 
-    const filteredMessages = (await interaction.channel.messages.fetch())
+    let filteredMessages = (await fetchAllMessages(interaction.channel))
       .filter((msg) => !msg.author.bot)
       .reduce((acc, msg) => {
-        let attachments = [];
-        if (msg.attachments.size !== 0) {
-          msg.attachments
-            .filter((a) => allowedTypes.includes(a.contentType))
-            .forEach((a) => {
-              attachments.push(new ShortAttachment(a));
-            });
-        }
-        msg.isForwarded = false;
-        if (
-          msg.content === "" &&
-          msg.attachments.size === 0 &&
-          msg.messageSnapshots
-        ) {
-          msg.isForwarded = true;
-          const referenceMessage = msg.messageSnapshots.get(
-            msg.reference.messageId
-          );
-          msg.content = referenceMessage.content;
-          const attachments = [];
-          if (referenceMessage.attachments.size !== 0) {
-            referenceMessage.attachments
-              .filter((a) => allowedTypes.includes(a.contentType))
-              .forEach((a) => {
-                attachments.push(new ShortAttachment(a));
-              });
-            msg.attachments = attachments;
-          }
-        }
-        let reactions = [];
-        if (msg.reactions.cache.size !== 0) {
-          // reactions = Array.from(msg.reactions.cache.values()).reduce(
-          //   async (accPromise, reaction) => {
-          //     const acc = await accPromise;
-          //     const users = Array.from(
-          //       (await reaction.users.fetch()).values()
-          //     ).filter((user) => !user.bot);
-          //     if (users.length === 0) return acc;
-          //     acc.push(
-          //       new MessageReactions(
-          //         reaction.emoji.id
-          //           ? `https://cdn.discordapp.com/emojis/${reaction.emoji.id}.png`
-          //           : reaction.emoji.name,
-          //         users.map(({ id }) => id)
-          //       )
-          //     );
-          //     return acc;
-          //   },
-          //   Promise.resolve([])
-          // );
-        }
-        acc.push(
-          new Message(
-            msg,
-            attachments,
-            extractCustomEmojis(msg.content),
-            extractMentions(msg.content)
-          )
-        );
+        // let attachments = [];
+        // if (msg.attachments.size !== 0) {
+        //   msg.attachments
+        //     .filter((a) => allowedTypes.includes(a.contentType))
+        //     .forEach((a) => {
+        //       attachments.push(new ShortAttachment(a));
+        //     });
+        // }
+        // msg.isForwarded = false;
+        // if (
+        //   msg.content === "" &&
+        //   msg.attachments.size === 0 &&
+        //   msg.messageSnapshots
+        // ) {
+        //   //? checking if message is forwaded
+        //   msg.isForwarded = true;
+        //   const referenceMessage = msg.messageSnapshots.get(
+        //     msg.reference.messageId
+        //   );
+        //   msg.content = referenceMessage.content;
+        //   const refAttachments = [];
+        //   if (referenceMessage.attachments.size !== 0) {
+        //     //? adding attachments from forwarded message
+        //     referenceMessage.attachments
+        //       .filter((a) => allowedTypes.includes(a.contentType))
+        //       .forEach((a) => {
+        //         refAttachments.push(new ShortAttachment(a));
+        //       });
+        //     attachments = refAttachments;
+        //   }
+        // }
+        // let reactions = [];
+        // if (msg.reactions.cache.size !== 0) {
+        //   //? adding reactions to message
+        //   reactions = Array.from(msg.reactions.cache.values()).reduce(
+        //     async (accPromise, reaction) => {
+        //       const acc = await accPromise;
+        //       const users = Array.from(
+        //         (await reaction.users.fetch()).values()
+        //       ).filter((user) => !user.bot);
+        //       if (users.length === 0) return acc;
+        //       acc.push(
+        //         new MessageReaction(
+        //           reaction.emoji.id
+        //             ? `https://cdn.discordapp.com/emojis/${reaction.emoji.id}.png`
+        //             : reaction.emoji.name,
+        //           users.map(({ id }) => id)
+        //         )
+        //       );
+        //       return acc;
+        //     },
+        //     Promise.resolve([])
+        //   );
+        // }
+        // acc.push(
+        //   new Message(
+        //     msg,
+        //     attachments,
+        //     extractCustomEmojis(msg.content),
+        //     extractMentions(msg.content),
+        //     reactions
+        //   )
+        // );
+        //! ahtung
+
+        acc.push(new Message(msg));
         return acc;
       }, []);
+
+    //? resolving reactions
+    filteredMessages = await Promise.all(
+      filteredMessages.map(async (msg) => {
+        if (msg.reactions.length === 0) return msg;
+        msg.reactions = await Promise.resolve(msg.reactions);
+        return msg;
+      })
+    );
 
     console.dir(filteredMessages, { depth: null });
     const savedTicket = await Ticket.findOne({
       channel: { id: interaction.channel.id },
     });
-    // filteredMessages.forEach((msg) => {
-    //   console.log(msg);
-    //   console.log("MENTINS _", msg.mentions);
-    // });
     const body = {
       chat: filteredMessages,
       openerId: savedTicket.openerId,
@@ -223,9 +299,10 @@ module.exports = {
         interaction.editReply({
           content: `Цей тікет видалиться через ${count} сек.`,
         });
-        const id = setInterval(() => {
+        const id = setInterval(async () => {
           if (count - 1 === 0) {
-            interaction.channel.delete();
+            await interaction.channel.delete();
+            await Ticket.findByIdAndDelete(savedTicket._id);
             return clearInterval(id);
           }
           count--;
