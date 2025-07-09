@@ -8,6 +8,9 @@ module.exports = async (content, channel, msg) => {
     if (latestChange.extraComment) {
       msgForUser += `\n Додатковий коментар від адміністрації: *${latestChange.extraComment}*`;
     }
+    if (content.postOrderId.length > 3) {
+      msgForUser += `\n Номер замовлення — \` ${content.postOrderId} \` `;
+    }
     (await main.client.users.fetch(content.clientData.discordId)).send({
       content: msgForUser,
     });

@@ -6,7 +6,7 @@ module.exports = async (gift) => {
   const embed = new EmbedBuilder()
     .setTitle(gift.title)
     .setColor(colors[0]._rgb)
-    .setDescription(gift.description)
+    .setDescription(gift.description ? gift.description : null)
     .setThumbnail(gift.image)
     .addFields({
       name: "Ціна",
