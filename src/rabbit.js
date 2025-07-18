@@ -61,22 +61,22 @@ class Rabbit {
       }
     });
 
-    // await this.channel.assertQueue("youtube-notifications", { durable: true });
-    // this.channel.consume("youtube-notifications", async (msg) => {
-    //   try {
-    //     console.log("Rabbit MSG", msg);
-    //     if (msg !== null) {
-    //       const messageContent = JSON.parse(msg.content.toString());
-    //       await handleYoutubeNotifications(
-    //         messageContent.body,
-    //         this.channel,
-    //         msg
-    //       );
-    //     }
-    //   } catch (err) {
-    //     console.log("Error while receiving Rabbit message: ", err);
-    //   }
-    // });
+    await this.channel.assertQueue("youtube-notifications", { durable: true });
+    this.channel.consume("youtube-notifications", async (msg) => {
+      try {
+        console.log("Rabbit MSG", msg);
+        if (msg !== null) {
+          const messageContent = JSON.parse(msg.content.toString());
+          await handleYoutubeNotifications(
+            messageContent.body,
+            this.channel,
+            msg
+          );
+        }
+      } catch (err) {
+        console.log("Error while receiving Rabbit message: ", err);
+      }
+    });
   }
 }
 
