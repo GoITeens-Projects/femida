@@ -91,7 +91,7 @@ module.exports = {
     const response = await resp.json();
     console.log(response);
     if (resp.status >= 400) {
-      return interaction.reply({
+      return interaction.editReply({
         content: "Сталась помилка. Запит не відправлено і бали не знято",
       });
     }

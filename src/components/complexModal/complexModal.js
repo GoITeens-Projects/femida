@@ -105,6 +105,12 @@ module.exports = {
     const response = await resp.json();
     // console.log(response);
     if (resp.status >= 400) {
+      if (resp.status === 403) {
+        return await interaction.editReply({
+          content:
+            "Цей подарунок зараз недоступний. Спробуй обрати інший, або звернись по адміністрації",
+        });
+      }
       return await interaction.editReply({
         content: "Сталась помилка. Запит не відправлено і бали не знято",
       });
