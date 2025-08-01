@@ -49,11 +49,12 @@ module.exports = {
     ),
 
   async execute(interaction) {
+    await interaction.deferReply({});
     const amount = interaction.options.get("amount")?.value;
     const userId = interaction.options.get("user")?.value;
     const reply = async (content) => {
       await interaction
-        .reply({
+        .editReply({
           content,
           ephemeral: true,
         })
