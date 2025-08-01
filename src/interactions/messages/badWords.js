@@ -10,6 +10,11 @@ const decodeMessage = require("../../utils/decodeMessage");
 const main = require("../../index");
 const { guildId } = require("../../constants/config");
 
+function checkMessageBadWords(msg, word) {
+  const regex = new RegExp(`\\b${word}\\b`, "i");
+  return regex.test(msg);
+}
+
 async function notifyUser(settings, user, message) {
   const obj = {};
   const { xp, level } = await Level.findOne({ userId: user.id });
@@ -69,9 +74,9 @@ module.exports = async (message) => {
       return;
 
     for (const word of settings.badwords.words) {
-      if (!message.content.toLowerCase().includes(word.toLowerCase())) continue;
+      if (!checkMessageBadWords(message.toLowerCase(), word.toLowerCase()))
+        continue;
       let userObj = await Level.findOne({ userId: message.author.id });
-      // console.log(settings);
       if (!userObj) {
         addNewMember(null, message);
         userObj = await Level.findOne({ userId: message.author.id });
