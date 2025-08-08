@@ -10,9 +10,14 @@ const decodeMessage = require("../../utils/decodeMessage");
 const main = require("../../index");
 const { guildId } = require("../../constants/config");
 
-function checkMessageBadWords(msg, word) {
-  const regex = new RegExp(`\\b${word}\\b`, "i");
-  return regex.test(msg);
+function escapeRegExp(string) {
+  return string.replace(/([.*+?^=!:${}()|[\]\\])/g, "\\$1");
+}
+
+function checkMessageBadWords(s, word) {
+  const escapedWord = escapeRegExp(word);
+  const regex = new RegExp(`(^|[^\\p{L}])${escapedWord}([^\\p{L}]|$)`, "iu");
+  return regex.test(s);
 }
 
 async function notifyUser(settings, user, message) {
@@ -72,10 +77,8 @@ module.exports = async (message) => {
       settings.badwords.actions.ignoreAdmins
     )
       return;
-
     for (const word of settings.badwords.words) {
-      if (!checkMessageBadWords(message.toLowerCase(), word.toLowerCase()))
-        continue;
+      if (!checkMessageBadWords(message.content, word)) continue;
       let userObj = await Level.findOne({ userId: message.author.id });
       if (!userObj) {
         addNewMember(null, message);
