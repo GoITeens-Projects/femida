@@ -197,6 +197,11 @@ const SettingSchema = new mongoose.Schema({
       targetRoles: [String],
     },
   ],
+  mediaNotes: {
+    enabled: { type: Boolean, default: true },
+    discordChannelId: { type: String, default: "" },
+    youtubeChannelId: { type: String, required: true },
+  },
 });
 module.exports =
   mongoose.model.Settings || mongoose.model("Settings", SettingSchema);
