@@ -2,12 +2,17 @@ const main = require("../../index");
 const {
   channels: { youtubeChannel },
 } = require("../../constants/config");
+const SettingsInterface = require("../settings");
 
 module.exports = async (content, channel, msg) => {
   try {
     setTimeout(async () => {
       console.log("Youtube Notification Explode🦀");
-      const chat = await main.client.channels.fetch(youtubeChannel);
+      const settings = await SettingsInterface.getSettings();
+      if (!settings?.mediaNotes?.enabled) return;
+      const chat = await main.client.channels.fetch(
+        settings?.mediaNotes?.discordChannelId ?? youtubeChannel
+      );
       chat.send({
         content: `**${content.title}**\n${content.mediaNote}\n${content.link}`,
       });
