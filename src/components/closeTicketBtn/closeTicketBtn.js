@@ -92,16 +92,16 @@ class Message {
         msg.reference.messageId
       );
       this.content = referenceMessage.content;
-      const refAttachments = [];
-      if (referenceMessage.attachments.size !== 0) {
-        //? adding attachments from forwarded message
-        referenceMessage.attachments
-          .filter((a) => allowedTypes.includes(a.contentType))
-          .forEach((a) => {
-            refAttachments.push(new ShortAttachment(a));
-          });
-        this.attachments = refAttachments;
-      }
+      // const refAttachments = [];
+      // if (referenceMessage.attachments.size !== 0) {
+      //   //? adding attachments from forwarded message
+      //   referenceMessage.attachments
+      //     .filter((a) => allowedTypes.includes(a.contentType))
+      //     .forEach((a) => {
+      //       refAttachments.push(new ShortAttachment(a));
+      //     });
+      //   this.attachments = refAttachments;
+      // }
     }
   }
   extractAttachments(msg) {
@@ -146,11 +146,14 @@ class Message {
     this.author = { id: msg.author.id };
     this.isForwarded = false;
     this.createdAtTimestamp = msg.createdTimestamp;
+    this.checkAndRewriteForwardedMsg(msg);
+    if (this.isForwarded) {
+      msg = msg.messageSnapshots.get(msg.reference.messageId);
+    }
     this.attachments = this.extractAttachments(msg);
     this.customEmojis = extractCustomEmojis(this.content);
     this.mentions = extractMentions(this.content);
     this.reactions = this.extractReactions(msg);
-    this.checkAndRewriteForwardedMsg(msg);
   }
 }
 
