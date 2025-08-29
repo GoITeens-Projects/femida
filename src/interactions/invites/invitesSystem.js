@@ -23,29 +23,39 @@ class InvitesSystem {
   }
   async initializeInvites() {
     main.client.guilds.cache.forEach(async (guild) => {
-      const firstInvites = (await guild.invites.fetch()).filter(
-        async (invite) => {
-          try {
-            const inviterMember = await main.client.guilds.cache
-              .get(guildId)
-              .members.fetch(invite.inviterId);
-            if (
-              inviterMember.roles.cache.some((role) =>
-                adminRoles.includes(role.id)
-              )
+      const fetchedInvites = await guild.invites.fetch();
+      const firstInvites = [];
+      for (const invite of fetchedInvites.values()) {
+        try {
+          const inviterMember = await main.client.guilds.cache
+            .get(guildId)
+            .members.fetch(invite.inviterId);
+          console.log(
+            invite.code,
+            inviterMember.user.username,
+            inviterMember.roles.cache.some((role) =>
+              adminRoles.includes(role.id)
             )
-              return false;
-            return true;
-          } catch (err) {
-            return false;
-          }
+          );
+          if (
+            inviterMember.roles.cache.some((role) =>
+              adminRoles.includes(role.id)
+            )
+          )
+            continue;
+          firstInvites.push(invite);
+        } catch (err) {
+          console.log("caatch", invite.code);
+          continue;
         }
-      );
+      }
       invites.set(
         guild.id,
         new Collection(firstInvites.map((invite) => [invite.code, invite.uses]))
       );
-      console.log(invites.get(guild.id));
+      setTimeout(() => {
+        console.log(invites.get(guild.id));
+      }, 10000);
     });
   }
   async addInvite(invite) {
