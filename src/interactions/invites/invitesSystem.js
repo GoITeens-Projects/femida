@@ -25,20 +25,16 @@ class InvitesSystem {
     main.client.guilds.cache.forEach(async (guild) => {
       const firstInvites = (await guild.invites.fetch()).filter(
         async (invite) => {
-          try {
-            const inviterMember = await main.client.guilds.cache
-              .get(guildId)
-              .members.fetch(invite.inviterId);
-            if (
-              inviterMember.roles.cache.some((role) =>
-                adminRoles.includes(role.id)
-              )
+          const inviterMember = await main.client.guilds.cache
+            .get(guildId)
+            .members.fetch(invite.inviterId);
+          if (
+            inviterMember.roles.cache.some((role) =>
+              adminRoles.includes(role.id)
             )
-              return false;
-            return true;
-          } catch (err) {
+          )
             return false;
-          }
+          return true;
         }
       );
       invites.set(
