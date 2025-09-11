@@ -16,7 +16,8 @@ module.exports = async (content, channel, msg) => {
             message.content.toLowerCase().includes("verify ")
         )
         .first()
-        .react("🚩");
+        ?.react("🚩");
+      channel.ack(msg);
     }
     if (content.discordId) {
       const guild = main.client.guilds.cache.get(guildId);
