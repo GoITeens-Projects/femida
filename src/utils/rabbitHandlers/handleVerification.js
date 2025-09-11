@@ -8,7 +8,7 @@ module.exports = async (content, channel, msg) => {
   try {
     const dmChannel = await main.client.users.createDM(content.discordId);
     const messages = await dmChannel.messages.fetch({ limit: 100 });
-    if (!content.ok) {
+    if (!content.ok && messages.size > 0) {
       messages
         .filter(
           (message) =>
@@ -17,7 +17,6 @@ module.exports = async (content, channel, msg) => {
         )
         .first()
         ?.react("🚩");
-      channel.ack(msg);
     }
     if (content.discordId) {
       const guild = main.client.guilds.cache.get(guildId);
