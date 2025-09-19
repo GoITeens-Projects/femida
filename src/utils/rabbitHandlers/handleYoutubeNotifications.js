@@ -5,14 +5,35 @@ const {
 const SettingsInterface = require("../settings");
 const axios = require("axios");
 
-function extractVideoIdFromLink(link) {
-  if (link.includes("youtube/shorts")) {
-    //? Short video
-    return link.replace("https://www.youtube.com/shorts/", "");
-  } else {
-    //? Simple video
-    //? https://www.youtube.com/watch?v=
-    return link.replace("https://www.youtube.com/watch?v=", "");
+function extractVideoIdFromLink(url) {
+  try {
+    const parsedUrl = new URL(url);
+
+    //? short URLs https://youtu.be/VIDEO_ID format
+    if (parsedUrl.hostname === "youtu.be") {
+      return parsedUrl.pathname.slice(1);
+    }
+
+    //? Handle standard URLs like https://www.youtube.com/watch?v=VIDEO_ID
+    if (parsedUrl.hostname.includes("youtube.com")) {
+      const videoID = parsedUrl.searchParams.get("v");
+      if (videoID) return videoID;
+      //? https://www.youtube.com/embed/VIDEO_ID format
+      const pathParts = parsedUrl.pathname.split("/");
+      const embedIndex = pathParts.indexOf("embed");
+      if (embedIndex !== -1 && pathParts[embedIndex + 1]) {
+        return pathParts[embedIndex + 1];
+      }
+      //? /v/VIDEO_ID format
+      const vIndex = pathParts.indexOf("v");
+      if (vIndex !== -1 && pathParts[vIndex + 1]) {
+        return pathParts[vIndex + 1];
+      }
+    }
+
+    return null;
+  } catch (e) {
+    return null;
   }
 }
 
