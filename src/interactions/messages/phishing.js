@@ -93,12 +93,14 @@ module.exports = async (message) => {
         console.log("This is safe link. Admins think so");
         continue;
       }
-      const { passed, message, cached } = await PhishingInterface.isPhishingUrl(
-        url
-      );
+      const {
+        passed,
+        message: m,
+        cached,
+      } = await PhishingInterface.isPhishingUrl(url);
       if (!passed) {
-        console.log(message);
-        await punishUser(message);
+        console.log(m);
+        await punishUser(m);
         return;
       }
       console.log(`It's secure ${cached ? "cached" : ""} link`);
