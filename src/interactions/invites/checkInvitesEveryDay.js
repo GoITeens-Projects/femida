@@ -3,7 +3,7 @@ const InviteSystem = require("./invitesSystem");
 
 module.exports = async () => {
   const invitesCheckJob = new cron.CronJob(
-    "00 46 21 * * *",
+    "00 25 19 * * *",
     InviteSystem.dailyCheckInvites,
     null,
     true,
