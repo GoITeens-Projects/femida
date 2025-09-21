@@ -157,7 +157,7 @@ class InvitesSystem {
     const guild = main.client.guilds.cache.get(guildId);
     allSavedInvites.forEach(async (invite) => {
       console.log(invite.inviteCode);
-      if (!invite.guests) return;
+      if (!invite.guests || invite.guests.length === 0) return;
       console.log("guests passed");
       const firstGuestJoinDate = invite.guests.sort(
         (prevGuest, nextGuest) =>
