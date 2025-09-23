@@ -72,6 +72,7 @@ module.exports = async (message) => {
           await message.channel.send(
             "❗Посилання на інші Discord сервери заборонено"
           );
+          break;
         }
         continue;
       }
