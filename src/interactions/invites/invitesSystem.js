@@ -13,6 +13,7 @@ const invites = new Collection();
 const SettingsInterface = require("../../utils/settings");
 
 class InvitesSystem {
+  #ignoredInviteCodes = ["r6tvHb5hfz", "ZttSyKHBYS", "FfuEGnCXqU"];
   async #forceDeleteInvite(code, guildId) {
     invites.get(guildId).delete(code);
     await Invite.deleteOne({ inviteCode: code });
@@ -27,6 +28,7 @@ class InvitesSystem {
       const firstInvites = [];
       for (const invite of fetchedInvites.values()) {
         try {
+          if (this.#ignoredInviteCodes.includes(invite.code)) continue;
           const inviterMember = await main.client.guilds.cache
             .get(guildId)
             .members.fetch(invite.inviterId);
