@@ -13,6 +13,7 @@ const fs = require("node:fs");
 const addNewMember = require("./interactions/addNewMember.js");
 const accrualPoints = require("./interactions/messages/messages.js");
 const badWords = require("./interactions/messages/badWords.js");
+const checkScamPhotos = require("./interactions/messages/scamPhotos.js");
 const checkRoleInVc = require("./interactions/voice/checkRoleInVc.js");
 const database = require("./database.js");
 const Rabbit = require("./rabbit.js");
@@ -136,6 +137,13 @@ client.on("messageCreate", async (message) => {
   if (message.channel.type === 1) return await handleVerification(message);
   if (message.channel) await addNewMember(false, message);
   if (message.content === "бред") message.react("🍞");
+  if (message.attachments.size >= 3) {
+    const isScam = await checkScamPhotos(message.attachments);
+    if (isScam) {
+      await message.delete();
+      return;
+    }
+  }
   if (message.attachments.size > 0 && message.content === "") return;
   await accrualPoints(message);
   await addStats({ date: new Date(), id: message.author.id, type: "messages" });
