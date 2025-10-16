@@ -1,4 +1,4 @@
-const suspicousNames = ["image", "images", "img", "photo", "pic", "picture"];
+const suspiciousNames = ["image", "images", "img", "photo", "pic", "picture"];
 
 const checkScamPhotos = (attachments) => {
   const array = Array.from(attachments.values());
@@ -6,7 +6,7 @@ const checkScamPhotos = (attachments) => {
 
   //? cheking for the same (or common) suspicous names
   const isTheSame = names.every((name) => name === names[0]);
-  if (isTheSame && suspicousNames.includes(names[0])) return true;
+  if (isTheSame && suspiciousNames.includes(names[0])) return true;
 
   const hasCommon = names.every((name) =>
     suspiciousNames.some((susName) => name.includes(susName))
