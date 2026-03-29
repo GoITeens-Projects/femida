@@ -1,6 +1,8 @@
 const SettingsInterface = require("../../utils/settings");
 const PhishingInterface = require("../../utils/isPhishingURL");
 const urlRegex = /(?:https?:\/\/[^\s]+|\[[^\]]+\]\((https?:\/\/[^\s]+)\))/g;
+const discordInviteRegex =
+  /(?:https?:\/\/)?(?:www\.)?(?:discord\.gg|discord(?:app)?\.com\/invite)\/([a-zA-Z0-9\-]+)/g;
 const phishingRegex =
   /^(https?:\/\/)?(www\.)?((\d{1,3}\.){3}\d{1,3}|[a-zA-Z0-9-]+\.(?!com|net|org|edu|gov|io|cz|sk)[a-zA-Z]+)(\/|$)/;
 const redirectionRegex =
@@ -35,7 +37,10 @@ module.exports = async (message) => {
 
   const content = message.content;
 
-  const matches = [...content.matchAll(urlRegex)];
+  const matches = [
+    ...content.matchAll(urlRegex),
+    ...content.matchAll(discordInviteRegex),
+  ];
 
   const punishUser = async (reason) => {
     if (settings.scamLinks.actions.mute.enabled) {
@@ -48,19 +53,18 @@ module.exports = async (message) => {
     }
     if (settings.scamLinks.actions.notifyUser.enabled) {
       await message.channel.send(
-        `<@${message.author.id}>, не відправляй фішинг посилань!`
+        `<@${message.author.id}>, не відправляй фішинг посилань!`,
       );
     }
   };
 
   if (matches.length > 0) {
     for (const match of matches) {
-      const url = match[1] || match[0];
-      if (url.startsWith("https://discord.gg")) {
+      let url = match[1] || match[0];
+      if (match[0].match(discordInviteRegex)) {
+        url = match[0];
         const guildFromInvite = (
-          await message.client.fetchInvite(
-            url.replace("https://discord.gg/", "")
-          )
+          await message.client.fetchInvite(url.match(discordInviteRegex))
         )?.guild;
 
         if (
@@ -70,7 +74,7 @@ module.exports = async (message) => {
         ) {
           await message.delete();
           await message.channel.send(
-            "❗Посилання на інші Discord сервери заборонено"
+            "❗Посилання на інші Discord сервери заборонено",
           );
           break;
         }
@@ -78,17 +82,17 @@ module.exports = async (message) => {
       }
       if (
         settings.scamLinks.targetLinks.some((scamLink) =>
-          url.includes(scamLink)
+          url.includes(scamLink),
         )
       ) {
         await punishUser(
-          "Публікація підозрілих посилань в чат (посилання внесено в список підозрілих адміністраторами)"
+          "Публікація підозрілих посилань в чат (посилання внесено в список підозрілих адміністраторами)",
         );
         return;
       }
       if (
         settings.scamLinks.exceptions?.some((safeLink) =>
-          url.startsWith(safeLink)
+          url.startsWith(safeLink),
         )
       ) {
         console.log("This is safe link. Admins think so");

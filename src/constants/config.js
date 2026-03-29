@@ -9,6 +9,10 @@ module.exports = {
     removeMessages: true,
   },
   guildId: "1192065857363394621",
+  calculateVotes: {
+    voteTag: "!femidavote",
+    minJoinedTimestamp: 1000 * 60 * 60 * 24 * 7
+  },
   xps: {
     boost: 500,
     message: 4,
@@ -68,6 +72,10 @@ module.exports = {
 //     removeMessages: true,
 //   },
 //   guildId: "953708116611051600",
+//   calculateVotes: {
+//     voteTag: "!femidavote",
+//     minJoinedTimestamp: 1000 * 60 * 60 * 24 * 7
+//   },
 //   xps: {
 //     boost: 500,
 //     message: 4,
