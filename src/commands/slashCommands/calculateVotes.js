@@ -7,7 +7,23 @@ const {
 function getMentionIds(message) {
   return message.mentions?.users.map((user) => user.id);
 }
-const placesEmojis = ["🥇", "🥈", "🥉"];
+
+function getEmojis(sortedArr) {
+  const placesEmojis = ["🥇", "🥈", "🥉"];
+  const newArr = new Set();
+  for (const entry of sortedArr) {
+    if (newArr >= 3) break;
+    newArr.add(entry[1]);
+  }
+  return {
+    topPositions: Array.from(newArr.values()),
+    getEmoji(votes) {
+      if (votes < this.topPositions[this.topPositions.length - 1]) return null;
+      const idx = this.topPositions.findIndex((val) => val === votes);
+      return idx === -1 ? null : placesEmojis[idx];
+    },
+  };
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -81,7 +97,9 @@ module.exports = {
           );
 
           acc.set(
-            isMentionsPresent ? getMentionIds(msg).join(", ") : msg.content,
+            isMentionsPresent
+              ? getMentionIds(msg).join(", ")
+              : msg.content.replace(calculateVotes.voteTag, "").trim(),
             filteredUsers.size,
           );
         }),
@@ -92,15 +110,16 @@ module.exports = {
 
     const sortedResult = Array.from(resultMap.entries()).sort(
       (prevEntry, nextEntry) => {
-        prevEntry[1] - nextEntry[1];
+        return nextEntry[1] - prevEntry[1];
       },
     );
+    const emojisRes = getEmojis(sortedResult);
 
     interaction.user.send(
       `Ось підраховані результати голосування (<#${interaction.channel.id}>):\n` +
-        sortedResult.reduce((acc, entry, index) => {
-          return (acc += `<@${entry[0]}> - ${entry[1]} голосів${
-            placesEmojis[index] ?? ""
+        sortedResult.reduce((acc, entry) => {
+          return (acc += `${isMentionsPresent ? `<@${entry[0]}>` : entry[0]} - ${entry[1]} голосів${
+            emojisRes.getEmoji(entry[1]) ?? ""
           } \n`);
         }, ""),
     );
