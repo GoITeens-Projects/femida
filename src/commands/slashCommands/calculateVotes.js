@@ -89,7 +89,9 @@ module.exports = {
                 return false;
               if (
                 msg.createdTimestamp - member.joinedTimestamp <
-                calculateVotes.minJoinedTimestamp
+                  calculateVotes.minJoinedTimestamp ||
+                member.user.createdTimestamp <
+                  calculateVotes.minUserCreatedTimestamp
               )
                 return false;
               return true;
