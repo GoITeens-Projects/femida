@@ -36,6 +36,102 @@ function getEmojis(sortedArr) {
   };
 }
 
+async function filterUsersVotes(
+  votePositions,
+  isMentionsPresent,
+  interaction,
+  isExcluding = true,
+) {
+  return await votePositions.reduce(async (accPromise, msg) => {
+    const acc = await accPromise;
+    if (msg.reactions.cache.size === 0) {
+      acc.set(
+        isMentionsPresent ? getMentionIds(msg).join(", ") : msg.content,
+        0,
+      );
+      return acc;
+    }
+    await Promise.all(
+      msg.reactions.cache.map(async (reaction) => {
+        const fetchedReaction = await reaction.fetch();
+        let filteredUsers = await fetchedReaction.users.fetch();
+
+        if (isExcluding) {
+          filteredUsers = (
+            await Promise.all(
+              filteredUsers.map(async (user) => {
+                const member = await interaction.guild.members
+                  .fetch(user.id)
+                  .catch(() => null);
+
+                if (!member) return null;
+
+                if (
+                  member.roles.cache.some((role) =>
+                    adminRoles.includes(role.id),
+                  )
+                )
+                  return null;
+
+                if (
+                  !member.roles.cache.some((role) => role.id === studentRole) &&
+                  (msg.createdTimestamp - member.joinedTimestamp <
+                    calculateVotes.minJoinedTimestamp ||
+                    member.user.createdTimestamp <
+                      calculateVotes.minUserCreatedTimestamp)
+                )
+                  return null;
+
+                return user;
+              }),
+            )
+          ).filter((user) => user !== null);
+          console.log("wecece3", filteredUsers);
+        } else {
+          filteredUsers = await Promise.all(
+            filteredUsers.map(async (user) => {
+              const member = await interaction.guild.members
+                .fetch(user.id)
+                .catch(() => null);
+              if (!member)
+                return new UserReactionDto(user.id, user.globalName, true);
+
+              let isFiltered = false;
+              if (
+                member.roles.cache.some((role) => adminRoles.includes(role.id))
+              )
+                isFiltered = true;
+              if (
+                (msg.createdTimestamp - member.joinedTimestamp <
+                  calculateVotes.minJoinedTimestamp ||
+                  member.user.createdTimestamp <
+                    calculateVotes.minUserCreatedTimestamp) &&
+                !member.roles.cache.some((role) => role.id === studentRole)
+              )
+                isFiltered = true;
+
+              return new UserReactionDto(
+                member.id,
+                member.displayName,
+                isFiltered,
+              );
+            }),
+          );
+        }
+
+        acc.set(
+          isMentionsPresent
+            ? getMentionIds(msg).join(", ")
+            : msg.content.replace(calculateVotes.voteTag, "").trim(),
+          isExcluding ? filteredUsers.length : filteredUsers,
+        );
+      }),
+    );
+
+    return acc;
+  }, Promise.resolve(new Map()));
+}
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("calculate-votes")
@@ -79,49 +175,14 @@ module.exports = {
       isMentionsPresent = true;
     }
 
-    const resultMap = await votePositions.reduce(async (accPromise, msg) => {
-      const acc = await accPromise;
-      if (msg.reactions.cache.size === 0) {
-        acc.set(
-          isMentionsPresent ? getMentionIds(msg).join(", ") : msg.content,
-          0,
-        );
-        return acc;
-      }
-      await Promise.all(
-        msg.reactions.cache.map(async (reaction) => {
-          const fetchedReaction = await reaction.fetch();
-          const filteredUsers = (await fetchedReaction.users.fetch()).filter(
-            (user) => {
-              const member = interaction.guild.members.cache.get(user.id);
-              if (!member) return false;
-              if (
-                member.roles.cache.some((role) => adminRoles.includes(role.id))
-              )
-                return false;
-              if (
-                (msg.createdTimestamp - member.joinedTimestamp <
-                  calculateVotes.minJoinedTimestamp ||
-                  member.user.createdTimestamp <
-                    calculateVotes.minUserCreatedTimestamp) &&
-                !member.roles.cache.some((role) => role.id === studentRole)
-              )
-                return false;
-              return true;
-            },
-          );
+    const resultMap = await filterUsersVotes(
+      votePositions,
+      isMentionsPresent,
+      interaction,
+      true,
+    );
 
-          acc.set(
-            isMentionsPresent
-              ? getMentionIds(msg).join(", ")
-              : msg.content.replace(calculateVotes.voteTag, "").trim(),
-            filteredUsers.size,
-          );
-        }),
-      );
-
-      return acc;
-    }, Promise.resolve(new Map()));
+    console.log("excp", resultMap);
 
     const sortedResult = Array.from(resultMap.entries()).sort(
       (prevEntry, nextEntry) => {
@@ -140,68 +201,20 @@ module.exports = {
     );
     await interaction.editReply({ content: "Відповіла в особисті😉" });
 
-    const resultLogsMap = await votePositions.reduce(
-      async (accPromise, msg) => {
-        const acc = await accPromise;
-        if (msg.reactions.cache.size === 0) {
-          acc.set(
-            isMentionsPresent ? getMentionIds(msg).join(", ") : msg.content,
-            0,
-          );
-          return acc;
-        }
-        await Promise.all(
-          msg.reactions.cache.map(async (reaction) => {
-            const fetchedReaction = await reaction.fetch();
-            const filteredUsers = (await fetchedReaction.users.fetch()).map(
-              (user) => {
-                const member = interaction.guild.members.cache.get(user.id);
-                let isFiltered = false;
-                if (!member)
-                  return new UserReactionDto(user.id, member.username, true);
-                if (
-                  member.roles.cache.some((role) =>
-                    adminRoles.includes(role.id),
-                  )
-                )
-                  isFiltered = true;
-                if (
-                  (msg.createdTimestamp - member.joinedTimestamp <
-                    calculateVotes.minJoinedTimestamp ||
-                    member.user.createdTimestamp <
-                      calculateVotes.minUserCreatedTimestamp) &&
-                  !member.roles.cache.some((role) => role.id === studentRole)
-                )
-                  isFiltered = true;
-
-                return new UserReactionDto(
-                  member.id,
-                  member.username,
-                  isFiltered,
-                );
-              },
-            );
-
-            acc.set(
-              isMentionsPresent
-                ? getMentionIds(msg).join(", ")
-                : msg.content.replace(calculateVotes.voteTag, "").trim(),
-              filteredUsers,
-            );
-          }),
-        );
-
-        return acc;
-      },
-      Promise.resolve(new Map()),
+    const resultLogsMap = await filterUsersVotes(
+      votePositions,
+      isMentionsPresent,
+      interaction,
+      false,
     );
+
     console.log("map", resultLogsMap.entries());
     Array.from(resultLogsMap.entries()).forEach(([key, value]) => {
       let msgString = `учасник ${key}\n`;
       console.log(typeof value);
       if (!(typeof value === "number")) {
         value.forEach((user) => {
-          msgString += `<@${user.id}> - ${user.isFiltered ? "не зараховано" : "зараховано"}`;
+          msgString += `${user.username} <@${user.id}> - ${user.isFiltered ? "не зараховано" : "зараховано"}`;
         });
       } else {
         msgString += "0 голосів";
