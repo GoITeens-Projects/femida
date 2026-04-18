@@ -6,9 +6,11 @@ const {
 
 class UserReactionDto {
   id;
+  username;
   isFiltered;
-  constructor(id, isFiltered) {
+  constructor(id, username, isFiltered) {
     this.id = id;
+    this.username = username;
     this.isFiltered = isFiltered;
   }
 }
@@ -154,8 +156,9 @@ module.exports = {
             const filteredUsers = (await fetchedReaction.users.fetch()).map(
               (user) => {
                 const member = interaction.guild.members.cache.get(user.id);
-                const isFiltered = false;
-                if (!member) isFiltered = true;
+                let isFiltered = false;
+                if (!member)
+                  return new UserReactionDto(user.id, member.username, true);
                 if (
                   member.roles.cache.some((role) =>
                     adminRoles.includes(role.id),
@@ -168,10 +171,14 @@ module.exports = {
                     member.user.createdTimestamp <
                       calculateVotes.minUserCreatedTimestamp) &&
                   !member.roles.cache.some((role) => role.id === studentRole)
-                ) 
+                )
                   isFiltered = true;
 
-                return new UserReactionDto(member.id, isFiltered);
+                return new UserReactionDto(
+                  member.id,
+                  member.username,
+                  isFiltered,
+                );
               },
             );
 
@@ -189,7 +196,7 @@ module.exports = {
       Promise.resolve(new Map()),
     );
     console.log("map", resultLogsMap.entries());
-    resultLogsMap.entries().forEach(([key, value]) => {
+    Array.from(resultLogsMap.entries()).forEach(([key, value]) => {
       let msgString = `учасник ${key}\n`;
       console.log(typeof value);
       if (!(typeof value === "number")) {
