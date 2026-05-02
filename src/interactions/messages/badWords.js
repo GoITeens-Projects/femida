@@ -40,16 +40,20 @@ async function notifyUser(settings, user, message) {
     obj.userXp = level;
   }
   const decodedMsgFn = decodeMessage(
-    settings.badwords.actions.notifyUser.messageFn
+    settings.badwords.actions.notifyUser.messageFn,
   );
-  message.reply(decodedMsgFn(obj));
+  try {
+    message.reply(String(decodedMsgFn(obj)));
+  } catch (e) {
+    message.channel.send(String(decodedMsgFn(obj)));
+  }
 }
 
 async function firstWarn(message, settings) {
   if (settings.badwords.actions.giveWarn)
     await giveSoftWarn(
       message.author.id,
-      "Використання нецензурної лексики (вперше)"
+      "Використання нецензурної лексики (вперше)",
     );
   // if (settings.badwords.actions.notifyUser.enabled) {
   // notifyUser(settings, message.author, message);
@@ -63,7 +67,7 @@ async function anotherWarn(message, settings) {
   if (settings.badwords.actions.giveWarn)
     await giveWarn(
       message.author.id,
-      "Неодноразове використання нецензурної лексики"
+      "Неодноразове використання нецензурної лексики",
     );
 }
 
@@ -88,7 +92,7 @@ module.exports = async (message) => {
       if (settings.badwords.actions.notifyUser.enabled) {
         if (!settings.badwords.actions.notifyUser.messageFn) {
           message.channel.send(
-            `<@${message.author.id}> не використовуй нецензурну лексику! Додаю тобі твій черговий варн`
+            `<@${message.author.id}> не використовуй нецензурну лексику! Додаю тобі твій черговий варн`,
           );
         } else {
           notifyUser(settings, message.author, message);
@@ -99,7 +103,7 @@ module.exports = async (message) => {
           settings.badwords.actions?.mute?.muteTimeMs
             ? settings.badwords.actions.mute.muteTimeMs
             : 1000 * 60 * 30,
-          "Використання нецензурної лайки"
+          "Використання нецензурної лайки",
         );
       if (!settings.badwords.actions.giveWarn) continue;
       if (userObj.warnings?.amount > 0) {
