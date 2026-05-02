@@ -88,7 +88,6 @@ module.exports = async (message) => {
         addNewMember(null, message);
         userObj = await Level.findOne({ userId: message.author.id });
       }
-      if (settings.badwords.actions.deleteMsg) await message.delete();
       if (settings.badwords.actions.notifyUser.enabled) {
         if (!settings.badwords.actions.notifyUser.messageFn) {
           message.channel.send(
@@ -98,6 +97,7 @@ module.exports = async (message) => {
           notifyUser(settings, message.author, message);
         }
       }
+      if (settings.badwords.actions.deleteMsg) await message.delete();
       if (settings.badwords.actions.mute.enabled)
         await message.member.timeout(
           settings.badwords.actions?.mute?.muteTimeMs
