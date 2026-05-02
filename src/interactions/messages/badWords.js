@@ -97,7 +97,13 @@ module.exports = async (message) => {
           notifyUser(settings, message.author, message);
         }
       }
-      if (settings.badwords.actions.deleteMsg) await message.delete();
+      if (settings.badwords.actions.deleteMsg) {
+        try {
+          await message.delete();
+        } catch (deleteError) {
+          if (deleteError.code !== 10008) console.error(deleteError);
+        }
+      }
       if (settings.badwords.actions.mute.enabled)
         await message.member.timeout(
           settings.badwords.actions?.mute?.muteTimeMs
