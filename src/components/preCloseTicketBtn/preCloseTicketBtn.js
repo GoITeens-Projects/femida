@@ -21,7 +21,10 @@ module.exports = {
       .roles.cache.some((role) => adminRoles.includes(role.id));
 
     if (!isAdmin) {
-      interaction.reply("Тільки адміністрація може закривати тікети🙃");
+      interaction.reply({
+        content: "Тільки адміністрація може закривати тікети🙃",
+        ephemeral: true,
+      });
       return;
     }
     interaction.reply({

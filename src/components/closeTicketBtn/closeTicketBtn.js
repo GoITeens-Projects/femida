@@ -196,13 +196,16 @@ module.exports = {
   component: closeTicketBtn,
   async execute(interaction) {
     if (!interaction.channel.name.startsWith("ticket")) return;
-    
+
     const isAdmin = interaction.guild.members.cache
       .get(interaction.user.id)
       .roles.cache.some((role) => adminRoles.includes(role.id));
 
     if (!isAdmin) {
-      interaction.reply("Тільки адміністрація може закривати тікети🙃");
+      interaction.reply({
+        content: "Тільки адміністрація може закривати тікети🙃",
+        ephemeral: true,
+      });
       return;
     }
 
