@@ -3,6 +3,9 @@ const { ButtonStyle } = require("discord.js");
 const cancelCloseTicketBtn = require("../cancelCloseTicketBtn/cancelCloseTicketBtn");
 const closeTicketBtn = require("../closeTicketBtn/closeTicketBtn");
 const { ActionRowBuilder } = require("@discordjs/builders");
+const {
+  roles: { adminRoles },
+} = require("../../constants/config");
 
 const preCloseTicketBtn = new ButtonBuilder()
   .setCustomId("preclose-ticket-btn")
