@@ -89,7 +89,7 @@ class Message {
       //? checking if message is forwaded
       this.isForwarded = true;
       const referenceMessage = msg.messageSnapshots.get(
-        msg.reference.messageId
+        msg.reference.messageId,
       );
       this.content = referenceMessage.content;
       // const refAttachments = [];
@@ -123,7 +123,7 @@ class Message {
         async (accPromise, reaction) => {
           const acc = await accPromise;
           const users = Array.from(
-            (await reaction.users.fetch()).values()
+            (await reaction.users.fetch()).values(),
           ).filter((user) => !user.bot);
           if (users.length === 0) return acc;
           acc.push(
@@ -131,12 +131,12 @@ class Message {
               reaction.emoji.id
                 ? `https://cdn.discordapp.com/emojis/${reaction.emoji.id}.png`
                 : reaction.emoji.name,
-              users.map(({ id }) => id)
-            )
+              users.map(({ id }) => id),
+            ),
           );
           return acc;
         },
-        Promise.resolve([])
+        Promise.resolve([]),
       );
     }
     return reactions;
@@ -169,8 +169,8 @@ function extractCustomEmojis(msg) {
       new MessageCustomEmoji(
         fullMatch,
         `https://cdn.discordapp.com/emojis/${emojiId}`,
-        startIndex
-      )
+        startIndex,
+      ),
     );
   }
   return results;
@@ -196,6 +196,16 @@ module.exports = {
   component: closeTicketBtn,
   async execute(interaction) {
     if (!interaction.channel.name.startsWith("ticket")) return;
+    
+    const isAdmin = interaction.guild.members.cache
+      .get(interaction.user.id)
+      .roles.cache.some((role) => adminRoles.includes(role.id));
+
+    if (!isAdmin) {
+      interaction.reply("Тільки адміністрація може закривати тікети🙃");
+      return;
+    }
+
     interaction.reply({ content: "Обробка..." });
     interaction.channel.edit({
       permissionOverwrites: [
@@ -286,7 +296,7 @@ module.exports = {
         if (msg.reactions.length === 0) return msg;
         msg.reactions = await Promise.resolve(msg.reactions);
         return msg;
-      })
+      }),
     );
 
     console.dir(filteredMessages, { depth: null });
