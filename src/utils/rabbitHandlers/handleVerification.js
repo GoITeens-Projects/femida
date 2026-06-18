@@ -22,17 +22,14 @@ module.exports = async (content, channel, msg) => {
       const guild = main.client.guilds.cache.get(guildId);
       // const member = await guild.members.fetch(content.discordId);
 
-      let member;
-      try {
-        member = await guild.members.fetch(content.discordId);
-      } catch (e) {
+      const member = await guild.members.fetch(content.discordId).catch((e) => {
         if (e.code === 10007) {
           console.log(`Member ${content.discordId} not found in guild`);
-          channel.nack(msg, false, true);
+          channel.reject(msg, false);
           return;
         }
         throw e;
-      }
+      });
 
       const role = guild.roles.cache.get(studentRole);
       member.user.send("Перевір свої ролі на сервері))");
