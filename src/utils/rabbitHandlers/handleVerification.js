@@ -31,6 +31,7 @@ module.exports = async (content, channel, msg) => {
         throw e;
       });
 
+      if (!member) return;
       const role = guild.roles.cache.get(studentRole);
       member.user.send("Перевір свої ролі на сервері))");
       member.roles.add(role);
