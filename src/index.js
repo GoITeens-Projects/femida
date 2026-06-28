@@ -136,7 +136,8 @@ client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
   if (message.channel.type === 1) return await handleVerification(message);
   if (message.channel) await addNewMember(false, message);
-  if (message.content === "бред") message.react("🍞");
+  if (message.content.toLowerCase() === "бред") message.react("🍞");
+  if (message.content.toLowerCase() === "коко") message.react("👻");
   if (message.attachments.size >= 3) {
     const isScam = await checkScamPhotos(message.attachments);
     if (isScam) {
