@@ -57,7 +57,7 @@ async function createRankCard(interaction, userObjDB) {
   }
 
   let userIcon = interaction.user.avatar
-    ? interaction.user.displayAvatarURL({ format: "png" })
+    ? interaction.user.displayAvatarURL({ extension: "png", forceStatic: true })
     : await createEmptyAvatarBuffer();
 
   if (userIcon.includes(".gif")) {
